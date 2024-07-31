@@ -64,15 +64,7 @@ struct RawEnv {
 impl RawEnv {
     /// Attempt to read and parse settings from the filesystem.
     fn try_new() -> Option<Self> {
-        let config: PathBuf = {
-            let c = dirs::aura_config().ok()?;
-            if c.is_file() {
-                c
-            } else {
-                dirs::aura_config_old().ok()?
-            }
-        };
-
+        let config: PathBuf = dirs::aura_config().ok()?;
         debug!("Reading: {}", config.display());
         let s = std::fs::read_to_string(config).ok()?;
         basic_toml::from_str(&s).ok()

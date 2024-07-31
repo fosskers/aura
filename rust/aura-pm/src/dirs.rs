@@ -44,13 +44,17 @@ pub(crate) fn xdg_config() -> Result<PathBuf, Error> {
 }
 
 /// The location of Aura's config file.
+///
+/// `~/.config/aura/` is automatically created if it doesn't exist.
 pub(crate) fn aura_config() -> Result<PathBuf, Error> {
-    xdg_config().map(|p| p.join("aura").join("config.toml"))
-}
+    let xdg = xdg_config()?;
+    let dir = xdg.join("aura");
 
-/// The previous location of Aura's config file.
-pub(crate) fn aura_config_old() -> Result<PathBuf, Error> {
-    xdg_config().map(|p| p.join("aura.toml"))
+    if dir.is_dir().not() {
+        std::fs::create_dir_all(&dir).map_err(|e| Error::Mkdir(dir.clone(), e))?;
+    }
+
+    Ok(dir.join("config.toml"))
 }
 
 /// Fetch the path value of `$XDG_CACHE_HOME` or provide its default according

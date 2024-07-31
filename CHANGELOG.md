@@ -8,6 +8,10 @@
   - `-s --reverse` can be turned on permanently in config.
   - `--asdeps` reinstated.
 
+#### Fixed
+
+- Auto-generate the `~/.config/aura/` directory if it doesn't exist.
+
 ## 4.0.0 (2024-07-31)
 
 Aura 4 represents a signicant body of work to port Aura from Haskell to Rust.
