@@ -15,7 +15,7 @@ _aura_opts_commands=(
     {-M,--abssync}'[Build and install from the ABS tree]'
     {-O,--orphans}'[Manage orphan packages]'
     {-Q,--query}'[Query the package database]'
-    {-R,--remove}'[Remove a packags]'
+    {-R,--remove}'[Remove a package]'
     {-S,--sync}'[Synchronize repo packages]'
     {-U,--upgrade}'[Upgrade packages]'
     {-V,--version}'[Display version information]'
