@@ -48,9 +48,6 @@ Looking for help? Try:
 Looking to migrate from Aura 3 to Aura 4? See the [Migration
 Guide](https://fosskers.github.io/aura/migration.html).
 
-> 💡 Aura's port to Rust is nearly complete. If you want early access, try out
-> the [aura-git](https://aur.archlinux.org/packages/aura-git) package.
-
 <!-- markdown-toc start - Don't edit this section. Run M-x markdown-toc-refresh-toc -->
 **Table of Contents**
 
