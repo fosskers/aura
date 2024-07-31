@@ -16,7 +16,7 @@ _aura_opts_commands=(
     {-L,--viewlog}'[Analyse the pacman log file]'
     {-O,--orphans}'[Manage orphan packages]'
     {-Q,--query}'[Query the package database]'
-    {-R,--remove}'[Remove a packags]'
+    {-R,--remove}'[Remove a package]'
     {-S,--sync}'[Synchronize repo packages]'
     {-T,--deptest}'[Check if given dependencies are satisfied]'
     {-U,--upgrade}'[Upgrade packages]'
