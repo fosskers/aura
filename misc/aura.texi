@@ -105,7 +105,7 @@ you select. @code{-Au} also invokes a save automatically.
 @heading Independence
 
 Aura has its own configuration file, its own local package cache, and
-its own @url{https://git.sr.ht/~fosskers/faur, Metadata Server} called
+its own @url{https://github.com/fosskers/faur, Metadata Server} called
 the Faur. The Faur in particular helps reduce traffic to the main AUR
 server and allows us to provide unique package lookup schemes not
 otherwise available.
@@ -1975,7 +1975,7 @@ See also the @url{https://github.com/fosskers/aura/discussions/657, original dis
 @heading Why did you write a custom metadata server?
 @cindex faur
 
-@url{https://git.sr.ht/~fosskers/faur, The Faur} yields the same JSON
+@url{https://github.com/fosskers/faur, The Faur} yields the same JSON
 format as the usual AUR RPC, but offers new endpoints. The primary
 functionality I required was "provides"-based lookup, but for AUR
 packages. The simplest way to achieve that was to write my own server,

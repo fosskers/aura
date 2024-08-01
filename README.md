@@ -116,7 +116,7 @@ native language. From the beginning, Aura has been built with multiple-language
 support in mind, making it very easy to add new ones via the [Project
 Fluent][fluent] format.
 
-[faur]: https://git.sr.ht/~fosskers/faur
+[faur]: https://github.com/fosskers/faur
 [fluent]: https://projectfluent.org/
 
 ## Installation

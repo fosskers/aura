@@ -1,4 +1,4 @@
-//! Core interactions with a [faur](https://git.sr.ht/~fosskers/faur) instance.
+//! Core interactions with a [faur](https://github.com/fosskers/faur) instance.
 
 use serde::Deserialize;
 use serde::Serialize;

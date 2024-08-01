@@ -40,7 +40,7 @@ See also the [original discussion](https://github.com/fosskers/aura/discussions/
 
 ## Why did you write a custom metadata server?
 
-[The Faur](https://git.sr.ht/~fosskers/faur) yields the same JSON format as the
+[The Faur](https://github.com/fosskers/faur) yields the same JSON format as the
 usual AUR RPC, but offers new endpoints. The primary functionality I required
 was "provides"-based lookup, but for AUR packages. The simplest way to achieve
 that was to write my own server, so I did.
