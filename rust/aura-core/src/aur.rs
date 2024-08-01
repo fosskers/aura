@@ -144,7 +144,14 @@ where
 /// Clone a package's AUR repository and return the full path to the clone.
 pub fn clone_aur_repo(root: Option<&Path>, package: &str) -> Result<PathBuf, crate::git::Error> {
     let mut url: PathBuf = [AUR_BASE_URL, package].iter().collect();
-    url.set_extension("git");
+
+    if let Some(ext) = url.extension() {
+        let mut p = PathBuf::from(ext);
+        p.set_extension("git");
+        url.set_extension(p);
+    } else {
+        url.set_extension("git");
+    };
 
     let clone_path: PathBuf = match root {
         None => PathBuf::from(package),
