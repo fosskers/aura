@@ -1,6 +1,7 @@
 //! Parsing values from the user's `makepkg.conf`, where ever that happens to
 //! be.
 
+use crate::dirs::xdg_config;
 use applying::Apply;
 use std::fs::File;
 use std::io::BufRead;
@@ -8,8 +9,8 @@ use std::io::BufReader;
 use std::ops::Not;
 use std::path::PathBuf;
 
-/// The default filepath of the Makepkg configuration.
-pub(crate) const MAKEPKG_CONF: &str = "/etc/makepkg.conf";
+/// The default filepath of the global Makepkg configuration.
+pub(crate) const GLOBAL_MAKEPKG_CONF: &str = "/etc/makepkg.conf";
 
 pub(crate) enum Error {
     Io(std::io::Error),
@@ -74,10 +75,38 @@ fn extract_list(s: &str) -> Vec<&str> {
     s.trim_matches(['(', ')']).split(' ').collect()
 }
 
+fn strong_local_conf() -> Option<PathBuf> {
+    xdg_config()
+        .ok()?
+        .join("pacman")
+        .join("makepkg.conf")
+        .apply(Some)
+}
+
+fn weak_local_conf() -> Option<PathBuf> {
+    std::env::var("HOME")
+        .ok()
+        .map(PathBuf::from)?
+        .join(".makepkg.conf")
+        .apply(Some)
+}
+
+/// Rules:
+/// 1. Global is at /etc/makepkg.conf by default.
+/// 2. The above _global_ config can be overridden via `MAKEPKG_CONF`.
+/// 3. If `$XDG_CONFIG_HOME/pacman/makepkg.conf` exists, it will take priority over the global.
+/// 4. If `$HOME/.makepkg.conf` exists, but (3) does not, it will take priority over the global.
 pub(crate) fn conf_location() -> PathBuf {
-    std::env::var("MAKEPKG_CONF")
-        .map(PathBuf::from)
-        .unwrap_or_else(|_| PathBuf::from(MAKEPKG_CONF))
+    let strong = strong_local_conf();
+    let weak = weak_local_conf();
+
+    match (strong, weak) {
+        (Some(pb), _) if pb.is_file() => pb,
+        (_, Some(pb)) if pb.is_file() => pb,
+        (_, _) => std::env::var("MAKEPKG_CONF")
+            .map(PathBuf::from)
+            .unwrap_or_else(|_| PathBuf::from(GLOBAL_MAKEPKG_CONF)),
+    }
 }
 
 #[cfg(test)]
