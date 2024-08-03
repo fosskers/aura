@@ -240,21 +240,24 @@ pub(crate) fn search(
     rev: bool,
     limit: Option<usize>,
     quiet: bool,
-    mut terms: Vec<String>,
+    terms: Vec<String>,
 ) -> Result<(), Error> {
     debug!("Searching for: {:?}", terms);
 
     // Sanitize the input.
-    terms.sort_unstable_by_key(|t| t.len());
-    for t in terms.iter_mut() {
-        t.make_ascii_lowercase();
-    }
+    let cleaned: HashSet<_> = terms
+        .iter()
+        .flat_map(|s| s.split(['-', '_']))
+        .map(|s| s.to_ascii_lowercase())
+        .collect();
 
-    debug!("Sanitized terms: {:?}", terms);
+    debug!("Sanitized terms: {:?}", cleaned);
 
-    let matches: Vec<aura_core::faur::Package> =
-        aura_core::faur::search(terms.iter().map(|s| s.as_str()), &crate::fetch::fetch_json)
-            .map_err(Error::Fetch)?;
+    let matches: Vec<aura_core::faur::Package> = aura_core::faur::search(
+        cleaned.iter().map(|s| s.as_str()),
+        &crate::fetch::fetch_json,
+    )
+    .map_err(Error::Fetch)?;
 
     debug!("Search matches: {}", matches.len());
 

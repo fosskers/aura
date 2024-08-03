@@ -10,6 +10,7 @@
 
 #### Fixed
 
+- `-As`: search terms are split to improve robustness of search results.
 - Auto-generate the `~/.config/aura/` directory if it doesn't exist.
 
 ## 4.0.0 (2024-07-31)
