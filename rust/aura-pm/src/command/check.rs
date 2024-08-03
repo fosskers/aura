@@ -177,8 +177,14 @@ fn pacman_config(fll: &FluentLanguageLoader, c: &pacmanconf::Config, a: &Aur) {
 }
 
 fn makepkg_config(fll: &FluentLanguageLoader, env: &Env) {
-    aura!(fll, "check-mconf");
-    packager_set(fll, env);
+    let path = env
+        .makepkg
+        .as_ref()
+        .map(|m| m.path.as_path().utf8())
+        .unwrap_or_else(|| "ERROR".to_string());
+
+    aura!(fll, "check-mconf", path = path.clone());
+    packager_set(fll, env, &path);
 }
 
 fn aura_config(fll: &FluentLanguageLoader) {
@@ -247,7 +253,7 @@ fn parsable_aura_toml(fll: &FluentLanguageLoader) {
     }
 }
 
-fn packager_set(fll: &FluentLanguageLoader, env: &Env) {
+fn packager_set(fll: &FluentLanguageLoader, env: &Env, path: &str) {
     let good = env
         .makepkg
         .as_ref()
@@ -259,7 +265,7 @@ fn packager_set(fll: &FluentLanguageLoader, env: &Env) {
 
     if !good {
         let cmd = "PACKAGER=\"You <you@foo.com>\"".cyan().to_string();
-        let msg = fl!(fll, "check-mconf-packager-fix", cmd = cmd);
+        let msg = fl!(fll, "check-mconf-packager-fix", cmd = cmd, path = path);
         println!("      └─ {}", msg);
     }
 }

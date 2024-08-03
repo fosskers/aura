@@ -32,12 +32,18 @@ pub(crate) struct Makepkg {
     pub(crate) packager: Option<String>,
     /// Assumed false if missing from the file.
     pub(crate) check: bool,
+    /// Not a setting per se, but the original path to the config file that was
+    /// detected.
+    pub(crate) path: PathBuf,
 }
 
 impl Makepkg {
     /// Attempt to read certain makepkg settings from the filesystem.
     pub(crate) fn new() -> Result<Self, Error> {
-        let (packager, check) = conf_location()
+        let path = conf_location();
+
+        let (packager, check) = path
+            .as_path()
             .apply(File::open)
             .map_err(Error::Io)?
             .apply(BufReader::new)
@@ -63,7 +69,11 @@ impl Makepkg {
                 }
             });
 
-        Ok(Makepkg { packager, check })
+        Ok(Makepkg {
+            packager,
+            check,
+            path,
+        })
     }
 }
 
