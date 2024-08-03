@@ -84,7 +84,6 @@ C-downgrade-which = الذي تريده؟. { $pkg } ما هو اصدار
 # C-downgrade-which = What version of { $pkg } do you want?
 
 # C-y-no-work = Package cache already synchronized.
-# C-y-which-cache = Which cache should receive the downloaded tarballs?
 # C-t-invalids = Removing invalid package tarballs.
 
 # Logs (-L)
@@ -148,9 +147,9 @@ C-downgrade-which = الذي تريده؟. { $pkg } ما هو اصدار
 # check-aconf-aura-parse = Aura config file can be parsed?
 # check-aconf-old-dirs = No old Aura directories exist?
 # check-aconf-old-conf = No old Aura config files exist?
-# check-mconf = Makepkg Configuration (/etc/makepkg.conf)
+# check-mconf = Makepkg Configuration ({ $path })
 # check-mconf-packager = PACKAGER set?
-# check-mconf-packager-fix = Set { $cmd } within /etc/makepkg.conf
+# check-mconf-packager-fix = Fix: Set { $cmd } within { $path }
 # check-snapshots = Package Snapshots
 # check-snapshot-usable = All snapshots have corresponding tarballs?
 # check-snapshot-usable-fix = Fix: You can remove old/unusable snapshots with { $command }
@@ -242,7 +241,6 @@ env-pconf = .الخاص بك pacman.confفشل تحليل ملف اﻟ
 # common-no = No
 # common-name = Name
 # common-done = Done.
-# common-total = Total
 # common-no-packages = No packages specified.
 # common-no-work = Nothing to do.
 # common-cancelled = Action cancelled.

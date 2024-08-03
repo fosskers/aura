@@ -82,7 +82,6 @@ C-c-freed = { $bytes } を削除した。
 C-downgrade-which = { $pkg } のどのバージョンにする？
 
 C-y-no-work = キャッシュは既に最新。
-C-y-which-cache = アーカイブファイルをどのキャッシュにダウンロードする？
 C-t-invalids = 不要なアーカイブを削除中…
 
 # Logs (-L)
@@ -235,7 +234,6 @@ common-yes = はい
 common-no = いいえ
 common-name = 名前
 common-done = 完了。
-common-total = 合計
 common-no-packages = パッケージは何も指定されていない。
 common-no-work = やる事は何もない。
 common-cancelled = 取り消し。
