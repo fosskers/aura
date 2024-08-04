@@ -1223,8 +1223,9 @@ want it off my system! Let's see...</p>
 <p>...nevermind. Note that cyan nodes indicate AUR packages.</p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="configuring-aura"><a class="header" href="#configuring-aura">Configuring Aura</a></h1>
 <p>For certain settings we use all the time (e.g. language, build paths, etc.),
-Aura is configurable via <code>~/.config/aura/config.toml</code>. This file, with sensible
-defaults, can be generated via:</p>
+Aura is configurable via <code>~/.config/aura/config.toml</code> in the <a href="https://en.wikipedia.org/wiki/TOML">TOML
+format</a>. This file, with sensible defaults,
+can be generated via:</p>
 <pre><code>aura conf --gen &gt; ~/.config/aura/config.toml
 </code></pre>
 <p>Here are the specifics of each field.</p>
@@ -1259,6 +1260,9 @@ defaults, can be generated via:</p>
 <tr><td style="text-align: left"><code>skipdepcheck</code></td><td style="text-align: left">bool</td><td style="text-align: left">Don't perform dependency checking at all.</td></tr>
 </tbody></table>
 </div>
+<p>Fields of type <code>string list</code> look like this:</p>
+<pre><code class="language-toml">ignores = ["foo", "bar", "baz"]
+</code></pre>
 <h2 id="package-snapshots"><a class="header" href="#package-snapshots">Package Snapshots</a></h2>
 <p>Governed within the <code>[backups]</code> section.</p>
 <div class="table-wrapper"><table><thead><tr><th style="text-align: left">Field</th><th style="text-align: left">Type</th><th style="text-align: left">Purpose</th></tr></thead><tbody>
