@@ -621,7 +621,7 @@ pub(crate) fn upgrade<'a>(
             match rpath {
                 Ok(path) => Some(Ok(path)),
                 Err(aura_core::aur::Error::PackageDoesNotExist(p)) => {
-                    if dryrun.not() {
+                    if dryrun.not() && env.aur.warn_unknowns {
                         yellow!(fll, "faur-unknown", pkg = p);
                     }
                     None

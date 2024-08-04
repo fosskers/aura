@@ -7,6 +7,8 @@
 - `-A`:
   - `-s --reverse` can be turned on permanently in config.
   - `--asdeps` reinstated.
+- New `[aur]` configuration option `warn_unknowns`. If `false`, warning messages
+  regarding "unknown packages" detected during an upgrade will be silenced.
 
 #### Fixed
 

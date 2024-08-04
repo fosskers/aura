@@ -1640,6 +1640,9 @@ See @code{aura stats --lang} for available language codes.
 @item clean
 @tab bool
 @tab Delete a package's build directory after building
+@item warn_unknowns
+@tab bool
+@tab If @code{false}, suppress warnings about unknown packages.
 @item noconfirm
 @tab bool
 @tab Automatically accept all prompts

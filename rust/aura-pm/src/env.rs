@@ -288,6 +288,7 @@ struct RawAur {
     nocheck: bool,
     #[serde(default)]
     reverse: bool,
+    warn_unknowns: Option<bool>,
 }
 
 #[derive(Debug, Serialize)]
@@ -313,6 +314,8 @@ pub(crate) struct Aur {
     pub(crate) delmakedeps: bool,
     /// Delete a package's build directory after the built tarball has been copied.
     pub(crate) clean: bool,
+    /// If `false`, suppress warnings involving unknown packages.
+    pub(crate) warn_unknowns: bool,
     /// Don't ask the user for confirmation.
     pub(crate) noconfirm: bool,
     /// Don't consider "checkdeps" during dependency resolution and when calling
@@ -350,6 +353,7 @@ impl Aur {
             diff: false,
             delmakedeps: false,
             clean: false,
+            warn_unknowns: true,
             noconfirm: false,
             nocheck: false,
             skipdepcheck: false,
@@ -457,6 +461,7 @@ impl TryFrom<RawAur> for Aur {
             diff: raw.diff,
             delmakedeps: raw.delmakedeps,
             clean: raw.clean,
+            warn_unknowns: raw.warn_unknowns.unwrap_or(true),
             noconfirm: raw.noconfirm,
             nocheck: raw.nocheck,
             skipdepcheck: false,

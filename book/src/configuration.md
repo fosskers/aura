@@ -28,24 +28,25 @@ See `aura stats --lang` for available language codes.
 
 Governed within the `[aur]` section.
 
-| Field          | Type        | Purpose                                                      |
-|:---------------|:------------|:-------------------------------------------------------------|
-| `build`        | string      | A path to the build cache Aura should use.                   |
-| `cache`        | string      | A path in which to store built package tarballs.             |
-| `clones`       | string      | A path in which to clone package metadata.                   |
-| `hashes`       | string      | A path in which to store the git hash of the latest build.   |
-| `builduser`    | string      | An alternate user to build as.                               |
-| `chroot`       | string list | Packages to build with `pkgctl build` in a chroot.           |
-| `ignores`      | string list | Packages to never update.                                    |
-| `git`          | bool        | Force update all VCS packages during `-Au`.                  |
-| `hotedit`      | bool        | Prompt to edit build files (PKGBUILD, etc.) before building. |
-| `shellcheck`   | bool        | Run `shellcheck` over PKGBUILDs before building.             |
-| `diff`         | bool        | Display PKGBUILD diffs during upgrades.                      |
-| `delmakedeps`  | bool        | Remove makedeps after building.                              |
-| `clean`        | bool        | Delete a package's build directory after building.           |
-| `noconfirm`    | bool        | Automatically accept all prompts.                            |
-| `nocheck`      | bool        | Don't run the `check()` function while building.             |
-| `skipdepcheck` | bool        | Don't perform dependency checking at all.                    |
+| Field           | Type        | Purpose                                                      |
+|:----------------|:------------|:-------------------------------------------------------------|
+| `build`         | string      | A path to the build cache Aura should use.                   |
+| `cache`         | string      | A path in which to store built package tarballs.             |
+| `clones`        | string      | A path in which to clone package metadata.                   |
+| `hashes`        | string      | A path in which to store the git hash of the latest build.   |
+| `builduser`     | string      | An alternate user to build as.                               |
+| `chroot`        | string list | Packages to build with `pkgctl build` in a chroot.           |
+| `ignores`       | string list | Packages to never update.                                    |
+| `git`           | bool        | Force update all VCS packages during `-Au`.                  |
+| `hotedit`       | bool        | Prompt to edit build files (PKGBUILD, etc.) before building. |
+| `shellcheck`    | bool        | Run `shellcheck` over PKGBUILDs before building.             |
+| `diff`          | bool        | Display PKGBUILD diffs during upgrades.                      |
+| `delmakedeps`   | bool        | Remove makedeps after building.                              |
+| `clean`         | bool        | Delete a package's build directory after building.           |
+| `warn_unknowns` | bool        | If `false`, suppress warnings about unknown packages.        |
+| `noconfirm`     | bool        | Automatically accept all prompts.                            |
+| `nocheck`       | bool        | Don't run the `check()` function while building.             |
+| `skipdepcheck`  | bool        | Don't perform dependency checking at all.                    |
 
 Fields of type `string list` look like this:
 
