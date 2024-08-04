@@ -1,8 +1,9 @@
 # Configuring Aura
 
 For certain settings we use all the time (e.g. language, build paths, etc.),
-Aura is configurable via `~/.config/aura/config.toml`. This file, with sensible
-defaults, can be generated via:
+Aura is configurable via `~/.config/aura/config.toml` in the [TOML
+format](https://en.wikipedia.org/wiki/TOML). This file, with sensible defaults,
+can be generated via:
 
 ```
 aura conf --gen > ~/.config/aura/config.toml
@@ -45,6 +46,12 @@ Governed within the `[aur]` section.
 | `noconfirm`    | bool        | Automatically accept all prompts.                            |
 | `nocheck`      | bool        | Don't run the `check()` function while building.             |
 | `skipdepcheck` | bool        | Don't perform dependency checking at all.                    |
+
+Fields of type `string list` look like this:
+
+```toml
+ignores = ["foo", "bar", "baz"]
+```
 
 ## Package Snapshots
 

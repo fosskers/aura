@@ -1565,8 +1565,9 @@ Note that cyan nodes indicate AUR packages.
 @cindex Configuration
 
 For certain settings we use all the time (e.g. language, build paths,
-etc.), Aura is configurable via @code{~/.config/aura/config.toml}. This
-file, with sensible defaults, can be generated via:
+etc.), Aura is configurable via @code{~/.config/aura/config.toml} in the
+@url{https://en.wikipedia.org/wiki/TOML, TOML format}. This file, with
+sensible defaults, can be generated via:
 
 @example
 aura conf --gen > ~/.config/aura/config.toml
@@ -1652,6 +1653,12 @@ See @code{aura stats --lang} for available language codes.
 @tab bool
 @tab Always reverse the search results
 @end multitable
+
+Fields of type @code{string list} look like this:
+
+@example
+ignores = ["foo", "bar", "baz"]
+@end example
 
 @heading Package Snapshots
 @cindex [backups], configuration block
