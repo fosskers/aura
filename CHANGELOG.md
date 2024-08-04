@@ -11,6 +11,7 @@
 #### Fixed
 
 - `-As`: search terms are split to improve robustness of search results.
+- `-Au`: A version comparison inconsistency involving `-git` packages.
 - Auto-generate the `~/.config/aura/` directory if it doesn't exist.
 - Consider all possible locations of `makepkg.conf`.
 
