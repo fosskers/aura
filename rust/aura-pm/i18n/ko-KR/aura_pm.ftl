@@ -163,6 +163,8 @@ L-recent = 근황
 # check-pkgs = Package Status
 # check-pkgs-old = All explicitly installed, non-dep packages are up to date?
 # check-pkgs-old-warn = { $pkg } was last updated { $days } ago.
+# check-pkgs-empty = All package clones are populated?
+# check-pkgs-empty-fix = Fix: Delete the following directories.
 
 # Thanks
 # thanks-you = Thank you for using Aura.

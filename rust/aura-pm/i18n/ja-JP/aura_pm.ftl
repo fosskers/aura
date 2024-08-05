@@ -158,6 +158,8 @@ check-cache-missing-for-fix = 修正案: { $cmd } で足りていないものを
 check-pkgs = パッケージ状態
 check-pkgs-old = 依存ではないパッケージが最近更新されている？
 check-pkgs-old-warn = { $pkg } が最後更新されたのは { $days } 日前。
+check-pkgs-empty = パッケージのcloneが失敗したものがない？
+check-pkgs-empty-fix = 修正案: 以下のフォルダを削除する事。
 
 # Thanks
 thanks-you = Aura のご利用、誠にありがとうございます。
