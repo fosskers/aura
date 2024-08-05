@@ -13,6 +13,23 @@ could be for a few reasons:
 - You've found a real bug in Aura.
   - [Please report it!](https://github.com/fosskers/aura/issues)
 
+## Why can't I do partial/regex searches with `-As`?
+
+Aura uses its own metadata server tuned for performance. You're encouraged to
+always search with full terms, like:
+
+```
+aura -As firefox
+```
+
+and not
+
+```
+aura -As firef
+```
+
+[See the Appendix](search.md) for why this is.
+
 ## How do I debug a problem?
 
 To display extra output during Aura's operation, pass `--log-level=info`. If

@@ -129,8 +129,8 @@ Linux}. It should also work on Arch-derivatives like
 other Linux distribution.
 
 There are several @code{aura} packages available. Aura was originally
-written in Haskell, but a port to Rust was released in 2024 as the `4.x`
-series.
+written in Haskell, but a port to Rust was released in 2024 as the
+@code{4.x} series.
 
 @node From the AUR
 @section From the AUR
@@ -326,7 +326,7 @@ Aura also provides a number of new commands.
 @ref{Installing AUR Packages}.
 
 @item
-@code{-B`}: Create and restore snapshots of installed packages.
+@code{-B}: Create and restore snapshots of installed packages.
 
 @example
 > aura -B
@@ -1679,6 +1679,83 @@ ignores = ["foo", "bar", "baz"]
 @node Appendix
 @chapter Appendix
 
+@node AUR Search Behaviour
+@section AUR Search Behaviour
+@cindex AUR Search Behaviour
+
+Aura uses its own metadata server called
+@url{https://github.com/fosskers/faur, the Faur} ("Fast AUR") to power
+@code{-Ai}, @code{-As}, and @code{-Av}. The behaviour of @code{-As} in
+particular is slightly different from usual searches on the AUR website
+as well as what other alternate package managers provide, but the result
+is a vast improvement in performance, simplicity of design, and ease of
+maintenance.
+
+Below are the details of the performance techniques, as well as how
+search results are affected.
+
+@heading Term Indices
+
+The Faur does not use a database, instead keeping all package data in
+memory. In order to enable efficient lookups based on arbitrary search
+terms, it constructs "term indices" whose keys are single terms found in
+a package's name, description, and keywords. These keys then refer back
+to the set of package names where they were found.
+
+For instance, the key for @code{nintendo} points to a set of 168 package
+names somehow related to Nintendo. With those names in hand, it's
+trivial to retrieve their full package data via another @code{name -> data}
+index.
+
+@heading "And" Semantics
+
+If instead you had run @code{aura -As nintendo switch}, two index calls
+would be made and their results combined via Set Intersection. So, you'd
+only have results that contained both terms. This actually makes the
+overall search faster, because there are fewer subsequent lookups to
+perform, and less JSON to render.
+
+In general, this architecture enables @code{O(k * logn)} performance for
+lookups, where @code{k} is the number of search terms. In layman's
+terms, "real fast".
+
+@heading Result Sorting
+
+Before returning the JSON, results are internally sorted by vote and
+then truncated to the top 50 results. This may punish some searches in
+some cases, but for the majority of user searches, this would result in
+what the user expected. Most searches don't even need all 50 results;
+you mostly care about the top entries anyway.
+
+@heading Input Sanitization
+
+Were a package originally called @code{great-fun-package}, its name
+would be split on @code{-} and registered to all three keys of
+@code{great}, @code{fun}, and @code{package}. So a search of any of
+those terms would find it.
+
+Likewise, if you had run @code{aura -As great-fun}, that input would be
+split as well and sent as @code{great} and @code{fun} separately,
+triggering the And Semantics described above.
+
+@heading No Regex or Partial Terms
+@cindex Why no regex search?
+
+However, a search for @code{pack} would not have found
+@code{great-fun-package}. As seen above, only full terms can match a key
+in the indices. This is the main difference between the Faur and the
+AUR.
+
+@quotation
+Why can't you just compare the search terms against all the keys?
+@end quotation
+
+Because that would result in @code{O(k * n)} performance, or in layman's
+terms, "real slow". I'd have to change the name to Saur.
+
+The moral of the story is: search with full terms and use "And
+Semantics" to get better results.
+
 @node Localisation Guide
 @section Localisation Guide
 @cindex Localising Aura
@@ -1910,7 +1987,7 @@ the most native speakers. This would apply to languages like Farsi
 (Persian), primarily spoken in Iran.
 
 If the language has a language code but not any associated country, like
-Esperanto, then invent one (e.g. `eo-EO`). Fluent
+Esperanto, then invent one (e.g. @code{eo-EO}). Fluent
 @url{https://github.com/kellpossible/cargo-i18n/issues/52, won't know
 the difference}.
 
@@ -1948,6 +2025,23 @@ You've found a real bug in Aura.
 @url{https://github.com/fosskers/aura/issues, PLease report it!}
 @end itemize
 
+@heading Why can't I do partial/regex searches with @code{-As}?
+
+Aura uses its own metadata server tuned for performance. You're
+encouraged to always search with full terms, like:
+
+@example
+aura -As firefox
+@end example
+
+and not
+
+@example
+aura -As firef
+@end example
+
+See @ref{AUR Search Behaviour} for why this is.
+
 @heading How do I debug a problem?
 @cindex How to debug
 
@@ -1964,7 +2058,7 @@ move to Rust:
 
 @enumerate
 @item
-To gain access to the `alpm` bindings already available for Rust.
+To gain access to the @code{alpm} bindings already available for Rust.
 @item
 To make Aura easier to install.
 @item
@@ -1972,7 +2066,7 @@ To open up Aura to more potential contributors.
 @item
 To reduce Aura's binary size.
 @item
-To improve Aura's CLI interface and `--help` messages.
+To improve Aura's CLI interface and @code{--help} messages.
 @item
 To improve Aura's performance.
 @end enumerate

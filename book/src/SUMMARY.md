@@ -15,6 +15,7 @@
   - [Dependency Analysis](./deps.md)
 - [Configuration](./configuration.md)
 - [Appendix](./appendix.md)
+  - [AUR Search Behaviour](./search.md)
   - [Localisation Guide](./localisation.md)
   - [Migration Guide (v3 to v4)](./migration.md)
   - [FAQ](./faq.md)
