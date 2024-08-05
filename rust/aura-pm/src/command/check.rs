@@ -66,7 +66,7 @@ pub(crate) fn check(fll: &FluentLanguageLoader, env: &Env) -> Result<(), Error> 
     makepkg_config(fll, env);
     snapshots(fll, &env.backups.snapshots, &caches);
     cache(fll, &alpm, pool, &caches);
-    packages(fll, &alpm);
+    packages(fll, env, &alpm);
     green!(fll, "common-done");
 
     Ok(())
@@ -509,9 +509,10 @@ fn pacnew_work() -> Option<Vec<(PathBuf, u64)>> {
     Some(bads)
 }
 
-fn packages(fll: &FluentLanguageLoader, alpm: &Alpm) {
+fn packages(fll: &FluentLanguageLoader, env: &Env, alpm: &Alpm) {
     aura!(fll, "check-pkgs");
     old_packages(fll, alpm);
+    empty_directories(fll, env);
 }
 
 fn old_packages(fll: &FluentLanguageLoader, alpm: &Alpm) {
@@ -559,6 +560,36 @@ fn old_packages(fll: &FluentLanguageLoader, alpm: &Alpm) {
             let msg = fl!(fll, "check-pkgs-old-warn", pkg = pkg, days = day);
             let arrow = if i + 1 == len { "└─" } else { "├─" };
             println!("      {} {}", arrow, msg);
+        }
+    }
+}
+
+fn empty_directories(fll: &FluentLanguageLoader, env: &Env) {
+    if let Ok(dir) = env.aur.clones.read_dir() {
+        let mut empties: Vec<_> = dir
+            .filter_map(|de| de.ok())
+            .map(|de| de.path())
+            .par_bridge()
+            .filter_map(|p| {
+                p.read_dir()
+                    .ok()
+                    .map(|mut dir| dir.next().is_none())
+                    .unwrap_or(true)
+                    .then_some(p)
+            })
+            .collect();
+        empties.sort();
+
+        let symbol = if empties.is_empty() { GOOD.green() } else { BAD.red() };
+        println!("  [{}] {}", symbol, fl!(fll, "check-pkgs-empty"),);
+
+        if empties.is_empty().not() {
+            let msg = fl!(fll, "check-pkgs-empty-fix");
+            println!("      └─ {}", msg);
+
+            for empty in empties {
+                println!("         - {}", empty.display());
+            }
         }
     }
 }

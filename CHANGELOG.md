@@ -9,6 +9,7 @@
   - `--asdeps` reinstated.
 - New `[aur]` configuration option `warn_unknowns`. If `false`, warning messages
   regarding "unknown packages" detected during an upgrade will be silenced.
+- `check`: a check for any broken package clones (empty directories).
 
 #### Fixed
 
