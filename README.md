@@ -76,7 +76,7 @@ Guide](https://fosskers.github.io/aura/migration.html).
 
 Aura is a package manager for Arch Linux. Its original purpose was in
 supplementing Pacman to support the building of AUR packages, but since its
-creation in 2012 it has since evolved to enable a variety of use cases.
+creation in 2012 it has evolved to enable a variety of use cases.
 
 ## The Aura Philosophy
 
