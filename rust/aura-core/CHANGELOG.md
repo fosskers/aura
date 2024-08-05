@@ -1,6 +1,6 @@
 # aura-core
 
-## Unreleased
+## 0.8.1
 
 #### Fixed
 
