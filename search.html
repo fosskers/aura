@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>Package Set Snapshots - The Aura User Guide</title>
+        <title>AUR Search Behaviour - The Aura User Guide</title>
 
 
         <!-- Custom HTML head -->
@@ -88,7 +88,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded affix "><a href="introduction.html">Introduction</a></li><li class="chapter-item expanded "><a href="philosophy.html"><strong aria-hidden="true">1.</strong> Philosophy</a></li><li class="chapter-item expanded "><a href="install.html"><strong aria-hidden="true">2.</strong> Installation</a></li><li class="chapter-item expanded "><a href="usage.html"><strong aria-hidden="true">3.</strong> Usage</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="pacman.html"><strong aria-hidden="true">3.1.</strong> Aura-as-Pacman</a></li><li class="chapter-item expanded "><a href="aur.html"><strong aria-hidden="true">3.2.</strong> Installing AUR Packages</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="storage.html"><strong aria-hidden="true">3.2.1.</strong> Package Storage Locations</a></li></ol></li><li class="chapter-item expanded "><a href="downgrading.html"><strong aria-hidden="true">3.3.</strong> Downgrading Packages</a></li><li class="chapter-item expanded "><a href="orphans.html"><strong aria-hidden="true">3.4.</strong> Managing Orphan Packages</a></li><li class="chapter-item expanded "><a href="snapshots.html" class="active"><strong aria-hidden="true">3.5.</strong> Package Set Snapshots</a></li><li class="chapter-item expanded "><a href="log.html"><strong aria-hidden="true">3.6.</strong> Log Interaction</a></li><li class="chapter-item expanded "><a href="deps.html"><strong aria-hidden="true">3.7.</strong> Dependency Analysis</a></li></ol></li><li class="chapter-item expanded "><a href="configuration.html"><strong aria-hidden="true">4.</strong> Configuration</a></li><li class="chapter-item expanded "><a href="appendix.html"><strong aria-hidden="true">5.</strong> Appendix</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="search.html"><strong aria-hidden="true">5.1.</strong> AUR Search Behaviour</a></li><li class="chapter-item expanded "><a href="localisation.html"><strong aria-hidden="true">5.2.</strong> Localisation Guide</a></li><li class="chapter-item expanded "><a href="migration.html"><strong aria-hidden="true">5.3.</strong> Migration Guide (v3 to v4)</a></li><li class="chapter-item expanded "><a href="faq.html"><strong aria-hidden="true">5.4.</strong> FAQ</a></li></ol></li></ol>
+                <ol class="chapter"><li class="chapter-item expanded affix "><a href="introduction.html">Introduction</a></li><li class="chapter-item expanded "><a href="philosophy.html"><strong aria-hidden="true">1.</strong> Philosophy</a></li><li class="chapter-item expanded "><a href="install.html"><strong aria-hidden="true">2.</strong> Installation</a></li><li class="chapter-item expanded "><a href="usage.html"><strong aria-hidden="true">3.</strong> Usage</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="pacman.html"><strong aria-hidden="true">3.1.</strong> Aura-as-Pacman</a></li><li class="chapter-item expanded "><a href="aur.html"><strong aria-hidden="true">3.2.</strong> Installing AUR Packages</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="storage.html"><strong aria-hidden="true">3.2.1.</strong> Package Storage Locations</a></li></ol></li><li class="chapter-item expanded "><a href="downgrading.html"><strong aria-hidden="true">3.3.</strong> Downgrading Packages</a></li><li class="chapter-item expanded "><a href="orphans.html"><strong aria-hidden="true">3.4.</strong> Managing Orphan Packages</a></li><li class="chapter-item expanded "><a href="snapshots.html"><strong aria-hidden="true">3.5.</strong> Package Set Snapshots</a></li><li class="chapter-item expanded "><a href="log.html"><strong aria-hidden="true">3.6.</strong> Log Interaction</a></li><li class="chapter-item expanded "><a href="deps.html"><strong aria-hidden="true">3.7.</strong> Dependency Analysis</a></li></ol></li><li class="chapter-item expanded "><a href="configuration.html"><strong aria-hidden="true">4.</strong> Configuration</a></li><li class="chapter-item expanded "><a href="appendix.html"><strong aria-hidden="true">5.</strong> Appendix</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="search.html" class="active"><strong aria-hidden="true">5.1.</strong> AUR Search Behaviour</a></li><li class="chapter-item expanded "><a href="localisation.html"><strong aria-hidden="true">5.2.</strong> Localisation Guide</a></li><li class="chapter-item expanded "><a href="migration.html"><strong aria-hidden="true">5.3.</strong> Migration Guide (v3 to v4)</a></li><li class="chapter-item expanded "><a href="faq.html"><strong aria-hidden="true">5.4.</strong> FAQ</a></li></ol></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle">
                 <div class="sidebar-resize-indicator"></div>
@@ -176,89 +176,64 @@
 
                 <div id="content" class="content">
                     <main>
-                        <h1 id="package-set-snapshots"><a class="header" href="#package-set-snapshots">Package Set Snapshots</a></h1>
-<p>Arch Linux (and Linux in general) used to have a reputation of breaking every
-time packages were upgraded. Around 2010, Aura's author used to run Arch on a
-Macbook, and such catastrophic breakage <em>did</em> occur every six months or so. But
-fast-forward to the present day, and such problems are rare. Even so, the idea
-of "whole system rollback" is spreading, and even since those early Arch-on-Mac
-days, Aura has had the <code>-B</code> Command for saving and restoring entire package
-sets.</p>
-<h2 id="saving-a-package-set"><a class="header" href="#saving-a-package-set">Saving a Package Set</a></h2>
-<pre><code>&gt; aura -B
-aura :: Saved package state.
-</code></pre>
-<p>This saves a file like <code>2024.07(Jul).09.21.07.02.json</code> to
-<code>~/.cache/aura/snapshots/</code>. If we take a peek inside, we see:</p>
-<pre><code>{
-  "time": [2024, 196, 3, 54, 43, 311735304, 0, 0, 0],
-  "pinned": false,
-  "packages": {
-    "libmm-glib": "1.22.0-1",
-    "fcitx5-mozc": "2.26.4632.102.g4d2e3bd-2",
-    "graphviz": "11.0.0-1",
-    "mailcap": "2.1.54-1",
-    "libsm": "1.2.4-1",
-    "containerd": "1.7.18-1",
-... etc ...
-</code></pre>
-<p>Simple enough - a list of all installed packages with their versions. We'll talk
-about <code>pinned</code> below.</p>
-<p>These files are in JSON format in case other tools wish to read them.</p>
-<h2 id="restoring-a-package-set"><a class="header" href="#restoring-a-package-set">Restoring a Package Set</a></h2>
-<p>Let's say I removed some packages a few days ago but am now having issues, and I
-want to rollback to the system state I had at the time. Let's see that happen:</p>
-<pre><code>&gt; aura -Br
-aura :: Select a snapshot to restore:
- 0) 2024-07-09 21-07-02 
- 1) 2024-07-12 22-56-43 
- 2) 2024-07-12 22-59-18 
- 3) 2024-07-12 23-04-25 
- 4) 2024-07-12 23-19-29 [pinned]
- 5) 2024-07-14 03-54-37 
- 6) 2024-07-14 03-54-43 
-&gt;&gt;&gt; 0
-loading packages...
-resolving dependencies...
-looking for conflicting packages...
-
-Packages (21) asar-3.2.8-1  cdparanoia-10.2-9  grimshot-1.9-1  gst-plugins-base-1.24.5-2
-              kirigami2-5.116.0-1  meson-1.4.1-1  mgba-qt-git-0.11.0.r8251.6853080b9-1
-              mgba-sdl-0.10.3-2  musl-1.2.5-1  neofetch-7.1.0-2  ninja-1.12.1-1  pkgstats-3.2.18-1
-              python-tqdm-4.66.4-1  qt5-graphicaleffects-5.15.14-1  qt5-multimedia-5.15.14+kde+r2-1
-              qt5-quickcontrols-5.15.14-1  qt5-quickcontrols2-5.15.14+kde+r5-1  typst-1:0.11.1-1
-              webui-2.5.0+beta.1+14+gb65608df-1  xf86-input-libinput-1.4.0-1  xorg-server-21.1.13-1
-
-Total Installed Size:  86.50 MiB
-
-:: Proceed with installation? [Y/n]
-</code></pre>
-<p>This reinstalls the old versions of those packages and removes anything
-currently installed that wasn't at the time of the snapshot.</p>
-<h2 id="clearing-out-old-saved-states"><a class="header" href="#clearing-out-old-saved-states">Clearing out old Saved States</a></h2>
-<p>Especially if you have automatic state-saving with <code>-Au</code> turned on, these
-snapshot files can build up quickly. You might not even have most of the
-packages necessary to roll back to those early states if you've recently used
-<code>-Cc</code>. Let's clear out the old, unusable ones:</p>
-<pre><code>&gt; aura -Bc 
-aura :: Remove stale snapshots? [Y/n] 
-aura :: Done.
-</code></pre>
-<p>"Stale" refers to snapshots for which the corresponding tarball of some package
-no longer exists on your system. You can confirm the overall state of your
-snapshots with <code>aura check</code>.</p>
-<p>If you have edited a snapshot file to change the <code>pinned</code> field to true, then
-<code>-Bc</code> will never remove it.</p>
+                        <h1 id="aur-search-behaviour"><a class="header" href="#aur-search-behaviour">AUR Search Behaviour</a></h1>
+<p>Aura uses its own metadata server called <a href="https://github.com/fosskers/faur">the Faur</a> ("Fast AUR") to power
+<code>-Ai</code>, <code>-As</code>, and <code>-Av</code>. The behaviour of <code>-As</code> in particular is slightly
+different from usual searches on the AUR website as well as what other alternate
+package managers provide, but the result is a vast improvement in performance,
+simplicity of design, and ease of maintenance.</p>
+<p>Below are the details of the performance techniques, as well as how search
+results are affected.</p>
+<h2 id="term-indices"><a class="header" href="#term-indices">Term Indices</a></h2>
+<p>The Faur does not use a database, instead keeping all package data in memory. In
+order to enable efficient lookups based on arbitrary search terms, it constructs
+"term indices" whose keys are single terms found in a package's name,
+description, and keywords. These keys then refer back to the set of package
+names where they were found.</p>
+<p>For instance, the key for <code>nintendo</code> points to a set of 168 package names
+somehow related to Nintendo. With those names in hand, it's trivial to retrieve
+their full package data via another <code>name -&gt; data</code> index.</p>
+<h2 id="and-semantics"><a class="header" href="#and-semantics">"And" Semantics</a></h2>
+<p>If instead you had run <code>aura -As nintendo switch</code>, two index calls would be made
+and their results combined via Set Intersection. So, you'd only have results
+that contained both terms. This actually makes the overall search faster,
+because there are fewer subsequent lookups to perform, and less JSON to render.</p>
+<p>In general, this architecture enables <code>O(k * logn)</code> performance for lookups, where
+<code>k</code> is the number of search terms. In layman's terms, "real fast".</p>
+<h2 id="result-sorting"><a class="header" href="#result-sorting">Result Sorting</a></h2>
+<p>Before returning the JSON, results are internally sorted by vote and then
+truncated to the top 50 results. This may punish some searches in some cases,
+but for the majority of user searches, this would result in what the user
+expected. Most searches don't even need all 50 results; you mostly care about
+the top entries anyway.</p>
+<h2 id="input-sanitization"><a class="header" href="#input-sanitization">Input Sanitization</a></h2>
+<p>Were a package originally called <code>great-fun-package</code>, its name would be split on
+<code>-</code> and registered to all three keys of <code>great</code>, <code>fun</code>, and <code>package</code>. So a
+search of any of those terms would find it.</p>
+<p>Likewise, if you had run <code>aura -As great-fun</code>, that input would be split as well
+and sent as <code>great</code> and <code>fun</code> separately, triggering the And Semantics described
+above.</p>
+<h2 id="no-regex-or-partial-terms"><a class="header" href="#no-regex-or-partial-terms">No Regex or Partial Terms</a></h2>
+<p>However, a search for <code>pack</code> would not have found <code>great-fun-package</code>. As seen
+above, only full terms can match a key in the indices. This is the main
+difference between the Faur and the AUR.</p>
+<blockquote>
+<p>Why can't you just compare the search terms against all the keys?</p>
+</blockquote>
+<p>Because that would result in <code>O(k * n)</code> performance, or in layman's terms, "real
+slow". I'd have to change the name to Saur.</p>
+<p>The moral of the story is: search with full terms and use "And Semantics" to get
+better results.</p>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="orphans.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="appendix.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <i class="fa fa-angle-left"></i>
                             </a>
 
-                            <a rel="next prefetch" href="log.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="localisation.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <i class="fa fa-angle-right"></i>
                             </a>
 
@@ -268,11 +243,11 @@ snapshots with <code>aura check</code>.</p>
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="orphans.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="appendix.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <i class="fa fa-angle-left"></i>
                     </a>
 
-                    <a rel="next prefetch" href="log.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="localisation.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <i class="fa fa-angle-right"></i>
                     </a>
             </nav>

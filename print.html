@@ -89,7 +89,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded affix "><a href="introduction.html">Introduction</a></li><li class="chapter-item expanded "><a href="philosophy.html"><strong aria-hidden="true">1.</strong> Philosophy</a></li><li class="chapter-item expanded "><a href="install.html"><strong aria-hidden="true">2.</strong> Installation</a></li><li class="chapter-item expanded "><a href="usage.html"><strong aria-hidden="true">3.</strong> Usage</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="pacman.html"><strong aria-hidden="true">3.1.</strong> Aura-as-Pacman</a></li><li class="chapter-item expanded "><a href="aur.html"><strong aria-hidden="true">3.2.</strong> Installing AUR Packages</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="storage.html"><strong aria-hidden="true">3.2.1.</strong> Package Storage Locations</a></li></ol></li><li class="chapter-item expanded "><a href="downgrading.html"><strong aria-hidden="true">3.3.</strong> Downgrading Packages</a></li><li class="chapter-item expanded "><a href="orphans.html"><strong aria-hidden="true">3.4.</strong> Managing Orphan Packages</a></li><li class="chapter-item expanded "><a href="snapshots.html"><strong aria-hidden="true">3.5.</strong> Package Set Snapshots</a></li><li class="chapter-item expanded "><a href="log.html"><strong aria-hidden="true">3.6.</strong> Log Interaction</a></li><li class="chapter-item expanded "><a href="deps.html"><strong aria-hidden="true">3.7.</strong> Dependency Analysis</a></li></ol></li><li class="chapter-item expanded "><a href="configuration.html"><strong aria-hidden="true">4.</strong> Configuration</a></li><li class="chapter-item expanded "><a href="appendix.html"><strong aria-hidden="true">5.</strong> Appendix</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="localisation.html"><strong aria-hidden="true">5.1.</strong> Localisation Guide</a></li><li class="chapter-item expanded "><a href="migration.html"><strong aria-hidden="true">5.2.</strong> Migration Guide (v3 to v4)</a></li><li class="chapter-item expanded "><a href="faq.html"><strong aria-hidden="true">5.3.</strong> FAQ</a></li></ol></li></ol>
+                <ol class="chapter"><li class="chapter-item expanded affix "><a href="introduction.html">Introduction</a></li><li class="chapter-item expanded "><a href="philosophy.html"><strong aria-hidden="true">1.</strong> Philosophy</a></li><li class="chapter-item expanded "><a href="install.html"><strong aria-hidden="true">2.</strong> Installation</a></li><li class="chapter-item expanded "><a href="usage.html"><strong aria-hidden="true">3.</strong> Usage</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="pacman.html"><strong aria-hidden="true">3.1.</strong> Aura-as-Pacman</a></li><li class="chapter-item expanded "><a href="aur.html"><strong aria-hidden="true">3.2.</strong> Installing AUR Packages</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="storage.html"><strong aria-hidden="true">3.2.1.</strong> Package Storage Locations</a></li></ol></li><li class="chapter-item expanded "><a href="downgrading.html"><strong aria-hidden="true">3.3.</strong> Downgrading Packages</a></li><li class="chapter-item expanded "><a href="orphans.html"><strong aria-hidden="true">3.4.</strong> Managing Orphan Packages</a></li><li class="chapter-item expanded "><a href="snapshots.html"><strong aria-hidden="true">3.5.</strong> Package Set Snapshots</a></li><li class="chapter-item expanded "><a href="log.html"><strong aria-hidden="true">3.6.</strong> Log Interaction</a></li><li class="chapter-item expanded "><a href="deps.html"><strong aria-hidden="true">3.7.</strong> Dependency Analysis</a></li></ol></li><li class="chapter-item expanded "><a href="configuration.html"><strong aria-hidden="true">4.</strong> Configuration</a></li><li class="chapter-item expanded "><a href="appendix.html"><strong aria-hidden="true">5.</strong> Appendix</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="search.html"><strong aria-hidden="true">5.1.</strong> AUR Search Behaviour</a></li><li class="chapter-item expanded "><a href="localisation.html"><strong aria-hidden="true">5.2.</strong> Localisation Guide</a></li><li class="chapter-item expanded "><a href="migration.html"><strong aria-hidden="true">5.3.</strong> Migration Guide (v3 to v4)</a></li><li class="chapter-item expanded "><a href="faq.html"><strong aria-hidden="true">5.4.</strong> FAQ</a></li></ol></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle">
                 <div class="sidebar-resize-indicator"></div>
@@ -1273,6 +1273,54 @@ can be generated via:</p>
 </div><div style="break-before: page; page-break-before: always;"></div><h1 id="appendix"><a class="header" href="#appendix">Appendix</a></h1>
 <p>The following pages contain extra notes and knowledge that is not needed for
 ordinary Aura usage.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="aur-search-behaviour"><a class="header" href="#aur-search-behaviour">AUR Search Behaviour</a></h1>
+<p>Aura uses its own metadata server called <a href="https://github.com/fosskers/faur">the Faur</a> ("Fast AUR") to power
+<code>-Ai</code>, <code>-As</code>, and <code>-Av</code>. The behaviour of <code>-As</code> in particular is slightly
+different from usual searches on the AUR website as well as what other alternate
+package managers provide, but the result is a vast improvement in performance,
+simplicity of design, and ease of maintenance.</p>
+<p>Below are the details of the performance techniques, as well as how search
+results are affected.</p>
+<h2 id="term-indices"><a class="header" href="#term-indices">Term Indices</a></h2>
+<p>The Faur does not use a database, instead keeping all package data in memory. In
+order to enable efficient lookups based on arbitrary search terms, it constructs
+"term indices" whose keys are single terms found in a package's name,
+description, and keywords. These keys then refer back to the set of package
+names where they were found.</p>
+<p>For instance, the key for <code>nintendo</code> points to a set of 168 package names
+somehow related to Nintendo. With those names in hand, it's trivial to retrieve
+their full package data via another <code>name -&gt; data</code> index.</p>
+<h2 id="and-semantics"><a class="header" href="#and-semantics">"And" Semantics</a></h2>
+<p>If instead you had run <code>aura -As nintendo switch</code>, two index calls would be made
+and their results combined via Set Intersection. So, you'd only have results
+that contained both terms. This actually makes the overall search faster,
+because there are fewer subsequent lookups to perform, and less JSON to render.</p>
+<p>In general, this architecture enables <code>O(k * logn)</code> performance for lookups, where
+<code>k</code> is the number of search terms. In layman's terms, "real fast".</p>
+<h2 id="result-sorting"><a class="header" href="#result-sorting">Result Sorting</a></h2>
+<p>Before returning the JSON, results are internally sorted by vote and then
+truncated to the top 50 results. This may punish some searches in some cases,
+but for the majority of user searches, this would result in what the user
+expected. Most searches don't even need all 50 results; you mostly care about
+the top entries anyway.</p>
+<h2 id="input-sanitization"><a class="header" href="#input-sanitization">Input Sanitization</a></h2>
+<p>Were a package originally called <code>great-fun-package</code>, its name would be split on
+<code>-</code> and registered to all three keys of <code>great</code>, <code>fun</code>, and <code>package</code>. So a
+search of any of those terms would find it.</p>
+<p>Likewise, if you had run <code>aura -As great-fun</code>, that input would be split as well
+and sent as <code>great</code> and <code>fun</code> separately, triggering the And Semantics described
+above.</p>
+<h2 id="no-regex-or-partial-terms"><a class="header" href="#no-regex-or-partial-terms">No Regex or Partial Terms</a></h2>
+<p>However, a search for <code>pack</code> would not have found <code>great-fun-package</code>. As seen
+above, only full terms can match a key in the indices. This is the main
+difference between the Faur and the AUR.</p>
+<blockquote>
+<p>Why can't you just compare the search terms against all the keys?</p>
+</blockquote>
+<p>Because that would result in <code>O(k * n)</code> performance, or in layman's terms, "real
+slow". I'd have to change the name to Saur.</p>
+<p>The moral of the story is: search with full terms and use "And Semantics" to get
+better results.</p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="language-localisation-guide"><a class="header" href="#language-localisation-guide">Language Localisation Guide</a></h1>
 <p>Welcome! こんにちは！ Saluton!</p>
 <p>If you're reading this then it's likely that you want to help localise Aura into
@@ -1517,6 +1565,15 @@ dependency.
 </ul>
 </li>
 </ul>
+<h2 id="why-cant-i-do-partialregex-searches-with--as"><a class="header" href="#why-cant-i-do-partialregex-searches-with--as">Why can't I do partial/regex searches with <code>-As</code>?</a></h2>
+<p>Aura uses its own metadata server tuned for performance. You're encouraged to
+always search with full terms, like:</p>
+<pre><code>aura -As firefox
+</code></pre>
+<p>and not</p>
+<pre><code>aura -As firef
+</code></pre>
+<p><a href="search.html">See the Appendix</a> for why this is.</p>
 <h2 id="how-do-i-debug-a-problem"><a class="header" href="#how-do-i-debug-a-problem">How do I debug a problem?</a></h2>
 <p>To display extra output during Aura's operation, pass <code>--log-level=info</code>. If
 Aura is failing mysteriously somewhere, that output will at least let us know
