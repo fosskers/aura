@@ -1,6 +1,6 @@
 # Aura Changelog
 
-## Unreleased
+## 4.0.1
 
 #### Added
 
