@@ -525,14 +525,19 @@ pub fn build_order<E>(to_build: &[Buildable]) -> Result<Vec<Vec<&str>>, Error<E>
                     // new layer.
                     layers.push(group);
                     deps.clear();
+                    // NOTE 2024-08-07 Potentially a subtle bug here.
+                    //
+                    // We blindly add all this `buildable`'s deps here and hope
+                    // that thanks to the topological sort that they've already
+                    // processed into early layers. Also see comment (1) below.
                     deps.extend(&buildable.deps);
                     (layers, vec![buildable.name.as_str()], deps)
                 } else {
-                    // While all of the Buildable's official (non-AUR) deps are
-                    // also included in its `deps` field, only its own name is
-                    // ever added to the build order "group", and thus we never
-                    // try to mistakenly build an official package as an AUR
-                    // one.
+                    // (1) While all of the Buildable's official (non-AUR) deps
+                    // are also included in its `deps` field, only its own name
+                    // is ever added to the build order "group", and thus we
+                    // never try to mistakenly build an official package as an
+                    // AUR one.
                     group.push(buildable.name.as_str());
                     deps.extend(&buildable.deps);
                     (layers, group, deps)
@@ -762,6 +767,7 @@ mod test {
             },
             Buildable {
                 name: "f".to_string(),
+                // deps: vec!["c".to_string()].into_iter().collect(),
                 deps: HashSet::new(),
             },
         ];

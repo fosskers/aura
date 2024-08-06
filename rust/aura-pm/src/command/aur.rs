@@ -554,6 +554,8 @@ fn install_work(
             // Chances are that this condition is wrong. It's conceivable that a
             // binary package could slip into an early installation layer. This
             // needs to be confirmed, though.
+            //
+            // 2028-08-07 This happened to me yesterday.
             let flags = (!done || (matches!(mode, Mode::Install) && env.aur.asdeps))
                 .then(|| ["--asdeps"].as_slice())
                 .unwrap_or_default();

@@ -1,5 +1,11 @@
 # Aura Changelog
 
+## Unreleased
+
+#### Fixed
+
+- Zsh completions of `-S`.
+
 ## 4.0.1
 
 #### Added

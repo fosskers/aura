@@ -358,7 +358,7 @@ _aura_action_sync() {
                 "$_aura_opts_common[@]" \
                 "$_aura_opts_sync_actions[@]" \
                 "$_aura_opts_sync_modifiers[@]" \
-                '*:package:_aura_completions_all_packages'
+                '*:package:_aura_completions_repo_packages'
             ;;
     esac
 }
@@ -406,11 +406,11 @@ _aura_completions_repo_packages() {
     fi
 
     if compset -P1 '*/*'; then
-        packages=( $(_call_program packages $cmd[@] -Sql ${words[CURRENT]%/*}) )
+        packages=( $(pacman -Sql ${words[CURRENT]%/*}) )
         typeset -U packages
         ${seq} _wanted repo_packages expl "repository/package" compadd ${sep[@]} ${(@)packages}
     else
-        packages=( $(_call_program packages $cmd[@] -Sql) )
+        packages=( $(pacman -Sql) )
         typeset -U packages
         ${seq} _wanted packages expl "packages" compadd ${sep[@]} - "${(@)packages}"
 
