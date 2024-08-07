@@ -126,7 +126,7 @@ where
 
     let to_install = pkg_clones
         .map(|path| build_one(fll, caches, env, alpm, editor, requested, path))
-        .map(|r| build_check(fll, is_single, r))
+        .map(|r| build_check(fll, env, is_single, r))
         .collect::<Result<Vec<Option<Built>>, Error>>()?
         .into_iter()
         .flatten()
@@ -188,15 +188,15 @@ fn build_one(
         .map_err(Error::CopyBuildFiles)?;
 
     if env.aur.diff {
-        show_diffs(fll, &env.aur.hashes, &clone, base)?;
+        show_diffs(fll, env, &clone, base)?;
     }
 
     if env.aur.hotedit {
-        overwrite_build_files(fll, editor, &build_dir, base)?;
+        overwrite_build_files(fll, env, editor, &build_dir, base)?;
     }
 
     if env.aur.shellcheck {
-        shellcheck(fll, &build_dir)?;
+        shellcheck(fll, env, &build_dir)?;
     }
 
     let tarballs = {
@@ -297,19 +297,21 @@ fn all_install_files(clone: &Path) -> Vec<PathBuf> {
 
 fn show_diffs(
     fll: &FluentLanguageLoader,
-    hashes: &Path,
+    env: &Env,
     clone: &Path,
     pkgbase: &str,
 ) -> Result<(), Error> {
+    let hashes = env.aur.hashes.as_path();
+
     // Silently skip over any hashes that couldn't be read. This is mostly
     // likely due to the package being installed for the first time, thus having
     // no history to compare to.
     match hash_of_last_install(hashes, pkgbase) {
         Err(e) => warn!("Couldn't read latest hash of {}: {}", pkgbase, e),
         Ok(hash) => {
-            if proceed!(fll, "A-build-diff").is_some() {
+            if proceed!(fll, env, "A-build-diff").is_some() {
                 aura_core::git::diff(clone, &hash).map_err(Error::GitDiff)?;
-                proceed!(fll, "proceed").ok_or(Error::Cancelled)?;
+                proceed!(fll, env, "proceed").ok_or(Error::Cancelled)?;
             }
         }
     }
@@ -324,7 +326,7 @@ fn hash_of_last_install(hashes: &Path, pkgbase: &str) -> Result<String, std::io:
     std::fs::read_to_string(path).map(|s| s.trim().to_string())
 }
 
-fn shellcheck(fll: &FluentLanguageLoader, build_d: &Path) -> Result<(), Error> {
+fn shellcheck(fll: &FluentLanguageLoader, env: &Env, build_d: &Path) -> Result<(), Error> {
     let status = Command::new("shellcheck")
         .current_dir(build_d)
         .arg("--severity=error")
@@ -334,12 +336,12 @@ fn shellcheck(fll: &FluentLanguageLoader, build_d: &Path) -> Result<(), Error> {
 
     match status {
         Ok(s) if s.success().not() => {
-            proceed!(fll, "proceed").ok_or(Error::Cancelled)?;
+            proceed!(fll, env, "proceed").ok_or(Error::Cancelled)?;
         }
         Err(e) => {
             let msg = e.to_string().yellow();
             aln!(msg);
-            proceed!(fll, "proceed").ok_or(Error::Cancelled)?;
+            proceed!(fll, env, "proceed").ok_or(Error::Cancelled)?;
         }
         Ok(_) => {}
     }
@@ -349,12 +351,13 @@ fn shellcheck(fll: &FluentLanguageLoader, build_d: &Path) -> Result<(), Error> {
 
 fn overwrite_build_files(
     fll: &FluentLanguageLoader,
+    env: &Env,
     editor: &str,
     build_d: &Path,
     pkgbase: &str,
 ) -> Result<(), Error> {
     // --- Edit the PKGBUILD in-place --- //
-    if proceed!(fll, "A-build-hotedit-pkgbuild").is_some() {
+    if proceed!(fll, env, "A-build-hotedit-pkgbuild").is_some() {
         let pkgbuild = build_d.join("PKGBUILD");
         edit(editor, pkgbuild)?;
     }
@@ -366,7 +369,7 @@ fn overwrite_build_files(
         install
     };
 
-    if install.is_file() && proceed!(fll, "A-build-hotedit-install").is_some() {
+    if install.is_file() && proceed!(fll, env, "A-build-hotedit-install").is_some() {
         edit(editor, install)?;
     }
 
@@ -563,6 +566,7 @@ fn move_tarball(source: &Path, target: &Path) -> Result<(), Error> {
 
 fn build_check(
     fll: &FluentLanguageLoader,
+    env: &Env,
     is_single: bool,
     r: Result<Built, Error>,
 ) -> Result<Option<Built>, Error> {
@@ -572,7 +576,7 @@ fn build_check(
             red!(fll, "A-build-fail");
             eprintln!("\n  {}\n", e.localise(fll));
 
-            if is_single || proceed!(fll, "A-build-continue").is_none() {
+            if is_single || proceed!(fll, env, "A-build-continue").is_none() {
                 Err(Error::Cancelled)
             } else {
                 Ok(None)

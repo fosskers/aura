@@ -11,6 +11,7 @@
 
 - Zsh completions of `-S`.
 - `check`: confirm that `dot` is on the system. If missing, it belongs to the `graphviz` package.
+- `--noconfirm` now affects all prompts.
 
 ## 4.0.1
 

@@ -421,7 +421,7 @@ where
             // Prompt if the user specified packages that are marked "ignored".
             if env.aur.ignores.contains(*p) {
                 let pkg = p.bold().cyan().to_string();
-                proceed!(fll, "A-install-ignored", file = pkg).is_some()
+                proceed!(fll, env, "A-install-ignored", file = pkg).is_some()
             } else {
                 true
             }
@@ -503,7 +503,7 @@ fn install_work(
 
     if env.aur.noconfirm.not() {
         // Proceed if the user accepts.
-        proceed!(fll, "proceed").ok_or(Error::Cancelled)?;
+        proceed!(fll, env, "proceed").ok_or(Error::Cancelled)?;
     }
 
     if matches!(mode, Mode::Upgrade) && env.backups.automatic {

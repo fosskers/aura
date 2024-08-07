@@ -98,22 +98,30 @@ macro_rules! executable {
 #[macro_export]
 /// Ask for permission to proceed, but with a custom message.
 macro_rules! proceed {
-    ($fll:expr, $msg:expr, $($arg:expr),*) => {{
-        let formatted = format!(
-            "{} [{}/{}] ",
-            i18n_embed_fl::fl!($fll, $msg, $($arg)*),
-            i18n_embed_fl::fl!($fll, "proceed-affirmative-alt"),
-            i18n_embed_fl::fl!($fll, "proceed-negative")
-        );
-        $crate::utils::prompt($fll, &$crate::a!(formatted))
+    ($fll:expr, $env:expr, $msg:expr, $($arg:expr),*) => {{
+        if !$env.general.noconfirm {
+            let formatted = format!(
+                "{} [{}/{}] ",
+                i18n_embed_fl::fl!($fll, $msg, $($arg)*),
+                i18n_embed_fl::fl!($fll, "proceed-affirmative-alt"),
+                i18n_embed_fl::fl!($fll, "proceed-negative")
+            );
+            $crate::utils::prompt($fll, &$crate::a!(formatted))
+        } else {
+            Some(())
+        }
     }};
-    ($fll:expr, $msg:expr) => {{
-        let formatted = format!(
-            "{} [{}/{}] ",
-            i18n_embed_fl::fl!($fll, $msg),
-            i18n_embed_fl::fl!($fll, "proceed-affirmative-alt"),
-            i18n_embed_fl::fl!($fll, "proceed-negative")
-        );
-        $crate::utils::prompt($fll, &$crate::a!(formatted))
+    ($fll:expr, $env:expr, $msg:expr) => {{
+        if !$env.general.noconfirm {
+            let formatted = format!(
+                "{} [{}/{}] ",
+                i18n_embed_fl::fl!($fll, $msg),
+                i18n_embed_fl::fl!($fll, "proceed-affirmative-alt"),
+                i18n_embed_fl::fl!($fll, "proceed-negative")
+            );
+            $crate::utils::prompt($fll, &$crate::a!(formatted))
+        } else {
+            Some(())
+        }
     }};
 }

@@ -178,9 +178,7 @@ fn work(args: Args, env: Env, fll: &FluentLanguageLoader) -> Result<(), Error> {
             a.packages.iter().map(|s| s.as_str()),
         )?,
         // --- Package Sets --- //
-        SubCmd::Backup(b) if b.clean => {
-            snapshot::clean(fll, &env.caches(), &env.backups.snapshots)?
-        }
+        SubCmd::Backup(b) if b.clean => snapshot::clean(fll, &env)?,
         SubCmd::Backup(b) if b.list => snapshot::list(&env.backups.snapshots)?,
         SubCmd::Backup(b) if b.restore => snapshot::restore(&env, fll, &env.alpm()?)?,
         SubCmd::Backup(_) => snapshot::save(fll, &env.alpm()?, &env.backups.snapshots)?,

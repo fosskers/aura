@@ -94,13 +94,11 @@ pub(crate) fn save(fll: &FluentLanguageLoader, alpm: &Alpm, snapshots: &Path) ->
 }
 
 /// Remove all saveds snapshots that don't have tarballs in the cache.
-pub(crate) fn clean(
-    fll: &FluentLanguageLoader,
-    caches: &[&Path],
-    snapshots: &Path,
-) -> Result<(), Error> {
-    proceed!(fll, "B-clean").ok_or(Error::Cancelled)?;
-    let vers = aura_core::cache::all_versions(caches);
+pub(crate) fn clean(fll: &FluentLanguageLoader, env: &Env) -> Result<(), Error> {
+    proceed!(fll, env, "B-clean").ok_or(Error::Cancelled)?;
+    let caches = env.caches();
+    let snapshots = env.backups.snapshots.as_path();
+    let vers = aura_core::cache::all_versions(&caches);
 
     for (path, snapshot) in aura_core::snapshot::snapshots_with_paths(snapshots) {
         if snapshot.pinned.not() && snapshot.usable(&vers).not() {

@@ -257,7 +257,7 @@ pub(crate) fn clean(env: &Env, fll: &FluentLanguageLoader, keep: usize) -> Resul
     yellow!(fll, "C-c-keep", pkgs = keep);
 
     // Proceed if the user accepts.
-    proceed!(fll, "proceed").ok_or(Error::Cancelled)?;
+    proceed!(fll, env, "proceed").ok_or(Error::Cancelled)?;
 
     let elevation = env.sudo();
 
@@ -287,7 +287,7 @@ pub(crate) fn clean_not_saved(fll: &FluentLanguageLoader, env: &Env) -> Result<(
     aura!(fll, "C-size", size = human);
 
     // Proceed if the user accepts.
-    proceed!(fll, "proceed").ok_or(Error::Cancelled)?;
+    proceed!(fll, env, "proceed").ok_or(Error::Cancelled)?;
 
     let tarballs = aura_core::cache::package_paths(&caches);
 
@@ -380,7 +380,7 @@ pub(crate) fn backup(fll: &FluentLanguageLoader, env: &Env, target: &Path) -> Re
     }
 
     // Proceed if the user accepts.
-    proceed!(fll, "proceed").ok_or(Error::Cancelled)?;
+    proceed!(fll, env, "proceed").ok_or(Error::Cancelled)?;
 
     copy(&sources, &full, cache_size.files)
 }
