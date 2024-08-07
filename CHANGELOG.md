@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+#### Changed
+
+- The `noconfirm` configuration option has been moved from the `[aur]` section
+  to `[general]` in a backward-compatible way.
+
 #### Fixed
 
 - Zsh completions of `-S`.

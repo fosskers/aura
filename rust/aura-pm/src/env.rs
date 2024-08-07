@@ -192,11 +192,12 @@ impl Env {
             self.aur.reconcile(self.makepkg.as_ref(), a)
         }
 
-        // Specifying a language on the command line overrides all other
-        // settings.
-        if let Some(l) = flags.language() {
-            self.general.language = l;
+        // HACK 2024-08-08 Remove after transition period.
+        if self.aur.noconfirm {
+            self.general.noconfirm = true;
         }
+
+        self.general.reconcile(flags);
     }
 
     /// Before continuing, confirm that the settled `Env` is valid to use.
@@ -215,6 +216,7 @@ struct RawGeneral {
     editor: Option<String>,
     doas: Option<bool>,
     language: Option<String>,
+    noconfirm: Option<bool>,
 }
 
 #[derive(Debug, Serialize)]
@@ -223,6 +225,22 @@ pub(crate) struct General {
     pub(crate) editor: String,
     pub(crate) doas: bool,
     pub(crate) language: LanguageIdentifier,
+    /// Don't ask the user for confirmation.
+    pub(crate) noconfirm: bool,
+}
+
+impl General {
+    fn reconcile(&mut self, flags: &aura_pm::flags::Args) {
+        // Specifying a language on the command line overrides all other
+        // settings.
+        if let Some(l) = flags.language() {
+            self.language = l;
+        }
+
+        if flags.noconfirm {
+            self.noconfirm = true;
+        }
+    }
 }
 
 impl Default for General {
@@ -232,6 +250,7 @@ impl Default for General {
             editor: editor(),
             doas: false,
             language: aura_pm::ENGLISH,
+            noconfirm: false,
         }
     }
 }
@@ -250,6 +269,7 @@ impl From<RawGeneral> for General {
                 .or_else(|| std::env::var("LANG").ok())
                 .and_then(identifier_from_locale)
                 .unwrap_or(aura_pm::ENGLISH),
+            noconfirm: raw.noconfirm.unwrap_or(false),
         }
     }
 }
@@ -317,6 +337,12 @@ pub(crate) struct Aur {
     /// If `false`, suppress warnings involving unknown packages.
     pub(crate) warn_unknowns: bool,
     /// Don't ask the user for confirmation.
+    // HACK 2024-08-08 A workaround to prevent old config from breaking.
+    //
+    // It was originally an oversight to put this here and not in `[general]`.
+    // Eventually this can be removed, but there will need to be a transition
+    // period in which this can be configured in either location.
+    #[serde(skip_serializing)]
     pub(crate) noconfirm: bool,
     /// Don't consider "checkdeps" during dependency resolution and when calling
     /// `makepkg`.
@@ -391,10 +417,6 @@ impl Aur {
 
         if flags.delmakedeps {
             self.delmakedeps = true;
-        }
-
-        if flags.noconfirm {
-            self.noconfirm = true;
         }
 
         if let Some(pb) = flags.build.as_deref() {

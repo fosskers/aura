@@ -1592,6 +1592,9 @@ Below are the specifics of each field.
 @item language
 @tab string
 @tab A code to specify the human language of Aura's output messages
+@item noconfirm
+@tab bool
+@tab Automatically accept all prompts
 @end multitable
 
 See @code{aura stats --lang} for available language codes.
@@ -1643,9 +1646,6 @@ See @code{aura stats --lang} for available language codes.
 @item warn_unknowns
 @tab bool
 @tab If @code{false}, suppress warnings about unknown packages.
-@item noconfirm
-@tab bool
-@tab Automatically accept all prompts
 @item nocheck
 @tab bool
 @tab Don't run the @code{check()} function while building

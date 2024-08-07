@@ -321,6 +321,9 @@ pub struct Args {
     /// Minimum level of Aura log messages to display.
     #[clap(long, value_name = "level", global = true, display_order = 9)]
     pub log_level: Option<LevelFilter>,
+    /// Do not ask for any confirmation.
+    #[clap(long, global = true, display_order = 9)]
+    pub noconfirm: bool,
     /// The Pacman/Aura subcommand to run.
     #[clap(subcommand)]
     pub subcmd: SubCmd,
@@ -542,9 +545,6 @@ pub struct Sync {
     /// Do not reinstall up to date packages.
     #[clap(long)]
     needed: bool,
-    /// Do not ask for any confirmation.
-    #[clap(long)]
-    noconfirm: bool,
     /// Do not show a progress bar when downloading files.
     #[clap(long)]
     noprogressbar: bool,
@@ -1289,10 +1289,6 @@ pub struct Aur {
     /// Pull the latest changes for every local copy of an AUR package.
     #[clap(long, short = 'y', display_order = 1)]
     pub refresh: bool,
-
-    /// Do not ask for any confirmation.
-    #[clap(long, display_order = 5)]
-    pub noconfirm: bool,
 
     /// (Makepkg) Do not run the check() function of the PKGBUILD.
     #[clap(long, display_order = 5)]

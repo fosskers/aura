@@ -15,12 +15,13 @@ Here are the specifics of each field.
 
 Governed within the `[general]` section.
 
-| Field      | Type   | Purpose                                                         |
-|:-----------|:-------|:----------------------------------------------------------------|
-| `cpus`     | int    | Affects parallelism in various algorithms.                      |
-| `editor`   | string | The editor opened with `--hotedit`, etc.                        |
-| `doas`     | bool   | Privilege escalation occurs via `doas`, not `sudo`.             |
-| `language` | string | A code to specify the human language of Aura's output messages. |
+| Field       | Type   | Purpose                                                         |
+|:------------|:-------|:----------------------------------------------------------------|
+| `cpus`      | int    | Affects parallelism in various algorithms.                      |
+| `editor`    | string | The editor opened with `--hotedit`, etc.                        |
+| `doas`      | bool   | Privilege escalation occurs via `doas`, not `sudo`.             |
+| `language`  | string | A code to specify the human language of Aura's output messages. |
+| `noconfirm` | bool   | Automatically accept all prompts.                               |
 
 See `aura stats --lang` for available language codes.
 
@@ -44,7 +45,6 @@ Governed within the `[aur]` section.
 | `delmakedeps`   | bool        | Remove makedeps after building.                              |
 | `clean`         | bool        | Delete a package's build directory after building.           |
 | `warn_unknowns` | bool        | If `false`, suppress warnings about unknown packages.        |
-| `noconfirm`     | bool        | Automatically accept all prompts.                            |
 | `nocheck`       | bool        | Don't run the `check()` function while building.             |
 | `skipdepcheck`  | bool        | Don't perform dependency checking at all.                    |
 
