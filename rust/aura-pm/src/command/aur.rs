@@ -556,9 +556,14 @@ fn install_work(
             // needs to be confirmed, though.
             //
             // 2028-08-07 This happened to me yesterday.
-            let flags = (!done || (matches!(mode, Mode::Install) && env.aur.asdeps))
-                .then(|| ["--asdeps"].as_slice())
+            let mut flags = (!done || (matches!(mode, Mode::Install) && env.aur.asdeps))
+                .then(|| vec!["--asdeps"])
                 .unwrap_or_default();
+
+            if env.general.noconfirm {
+                flags.push("--noconfirm");
+            }
+
             let tarballs = builts
                 .iter()
                 .flat_map(|b| b.tarballs.iter().map(|pp| pp.as_path()));
