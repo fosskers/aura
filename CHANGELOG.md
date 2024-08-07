@@ -5,6 +5,7 @@
 #### Fixed
 
 - Zsh completions of `-S`.
+- `check`: confirm that `dot` is on the system. If missing, it belongs to the `graphviz` package.
 
 ## 4.0.1
 

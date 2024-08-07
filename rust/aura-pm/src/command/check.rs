@@ -78,6 +78,7 @@ fn environment(fll: &FluentLanguageLoader) {
     editor(fll);
     java(fll);
     executable!(fll, "bat", "check-env-exec", exec = "bat");
+    executable!(fll, "dot", "check-env-exec", exec = "dot");
     executable!(fll, "fd", "check-env-exec", exec = "fd");
     executable!(fll, "git", "check-env-exec", exec = "git");
     executable!(fll, "rg", "check-env-exec", exec = "rg");

@@ -406,7 +406,7 @@ pub enum SubCmd {
     Check(Check),
     /// View various configuration settings and files.
     Conf(Conf),
-    /// Output a dependency graph in DOT format.
+    /// Output a dependency graph.
     Deps(Deps),
     /// State of Free Software installed on the system.
     Free(Free),
@@ -1294,7 +1294,7 @@ pub struct Aur {
     #[clap(long, display_order = 5)]
     pub noconfirm: bool,
 
-    /// (Makepkg) Do not run the check() function the PKGBUILD.
+    /// (Makepkg) Do not run the check() function of the PKGBUILD.
     #[clap(long, display_order = 5)]
     pub nocheck: bool,
 
