@@ -86,8 +86,7 @@ where
     F: Fn(&str) -> Result<Vec<Package>, E>,
     I: IntoIterator<Item = &'a str>,
 {
-    // FIXME Thu May  5 2022 Use `intersperse` once it stabilises.
-    let s: String = pkgs.into_iter().collect::<Vec<_>>().join(",");
+    let s = combine_and_sanitize(pkgs);
     let url = format!("{}/packages?names={}", FAUR_URL, s);
     fetch(&url)
 }
@@ -99,8 +98,7 @@ where
     F: Fn(&str) -> Result<Vec<Package>, E>,
     I: IntoIterator<Item = &'a str>,
 {
-    // FIXME Thu May  5 2022 Same as above.
-    let s: String = terms.into_iter().collect::<Vec<_>>().join(",");
+    let s = combine_and_sanitize(terms);
     let url = format!("{}/packages?names={}&by=desc", FAUR_URL, s);
     fetch(&url)
 }
@@ -111,9 +109,24 @@ where
     S: AsRef<str>,
     F: Fn(&str) -> Result<Vec<Package>, E>,
 {
-    let p = providing.as_ref();
+    let p = combine_and_sanitize([providing.as_ref()]);
     let url = format!("{}/packages?names={}&by=prov", FAUR_URL, p);
     fetch(&url)
+}
+
+fn combine_and_sanitize<'a, I>(terms: I) -> String
+where
+    I: IntoIterator<Item = &'a str>,
+{
+    // FIXME Thu May  5 2022 Use `intersperse` once it stabilises.
+    terms
+        .into_iter()
+        .collect::<Vec<_>>()
+        .join(",")
+        .chars()
+        // Poor man's URL encoding. This fixes the lookup for packages like `libstdc++5`.
+        .map(|c| if c == '+' { "%2B".to_string() } else { String::from(c) })
+        .collect()
 }
 
 #[cfg(test)]
@@ -121,6 +134,13 @@ mod test {
     use super::*;
     use std::fs::File;
     use std::io::BufReader;
+
+    #[test]
+    fn url_escaping() {
+        let items = ["libstdc++5"];
+        let res = combine_and_sanitize(items);
+        assert_eq!("libstdc%2B%2B5", res);
+    }
 
     #[test]
     fn package_parse() {

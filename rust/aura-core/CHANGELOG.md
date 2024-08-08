@@ -1,5 +1,11 @@
 # aura-core
 
+## Unreleased
+
+#### Fixed
+
+- Packages like `libstdc++5` now have their inner `+` escaped before querying the Faur.
+
 ## 0.8.1
 
 #### Fixed
