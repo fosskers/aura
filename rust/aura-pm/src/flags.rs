@@ -479,15 +479,8 @@ pub struct Sync {
     #[clap(long, short, display_order = 2)]
     verbose: bool,
     /// Download packages but do not install/upgrade anything.
-    #[clap(
-        group = "sync",
-        long,
-        short = 'w',
-        value_name = "packages",
-        num_args = 1..,
-        display_order = 1
-    )]
-    downloadonly: Vec<String>,
+    #[clap(long, short = 'w', display_order = 1)]
+    downloadonly: bool,
     /// Download fresh package databases from the server (-yy to force a refresh even if up to date).
     #[clap(long, short = 'y', action(ArgAction::Count), display_order = 1)]
     refresh: u8,

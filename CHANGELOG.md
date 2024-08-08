@@ -12,6 +12,7 @@
 - Zsh completions of `-S`.
 - `check`: confirm that `dot` is on the system. If missing, it belongs to the `graphviz` package.
 - `--noconfirm` now affects all prompts.
+- `-Sw` no longer requires arguments. This reenables `-Syuw`.
 
 ## 4.0.1
 
