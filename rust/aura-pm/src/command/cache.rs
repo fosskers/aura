@@ -169,11 +169,22 @@ pub(crate) fn invalid(
 
 /// Print the contents of the package caches.
 pub(crate) fn list(caches: &[&Path]) -> Result<(), Error> {
-    for path in caches {
-        path.read_dir()
-            .map_err(|_| Error::ReadDir(path.to_path_buf()))?
-            .filter_map(|de| de.ok())
-            .for_each(|de| println!("{}", de.path().display()));
+    let rds = caches
+        .iter()
+        .map(|path| {
+            path.read_dir()
+                .map_err(|_| Error::ReadDir(path.to_path_buf()))
+        })
+        .collect::<Result<Vec<_>, Error>>()?;
+
+    let mut paths: Vec<_> = rds
+        .into_iter()
+        .flat_map(|rd| rd.filter_map(|de| de.ok()).map(|de| de.path()))
+        .collect();
+    paths.sort();
+
+    for path in paths {
+        println!("{}", path.display());
     }
 
     Ok(())

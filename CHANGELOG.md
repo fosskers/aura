@@ -13,6 +13,7 @@
 - `check`: confirm that `dot` is on the system. If missing, it belongs to the `graphviz` package.
 - `--noconfirm` now affects all prompts.
 - `-Sw` no longer requires arguments. This reenables `-Syuw`.
+- `-Bl` and `-Cl` now print paths in alphabetical order.
 
 ## 4.0.1
 

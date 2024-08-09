@@ -112,7 +112,12 @@ pub(crate) fn clean(fll: &FluentLanguageLoader, env: &Env) -> Result<(), Error> 
 
 /// Show all saved package snapshot filenames.
 pub(crate) fn list(snapshots: &Path) -> Result<(), Error> {
-    for (path, _) in aura_core::snapshot::snapshots_with_paths(snapshots) {
+    let mut paths: Vec<_> = aura_core::snapshot::snapshots_with_paths(snapshots)
+        .map(|(path, _)| path)
+        .collect();
+    paths.sort();
+
+    for path in paths {
         println!("{}", path.display());
     }
 
