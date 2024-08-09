@@ -1,6 +1,6 @@
 # Aura Changelog
 
-## Unreleased
+## 4.0.2 (2024-08-10)
 
 #### Changed
 
