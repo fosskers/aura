@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+#### Changed
+
+- Bump `versions` pin to avoid very rare comparison bug.
+
 #### Fixed
 
 - Packages like `libstdc++5` now have their inner `+` escaped before querying the Faur.
