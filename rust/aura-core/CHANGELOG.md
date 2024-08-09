@@ -1,6 +1,6 @@
 # aura-core
 
-## Unreleased
+## 0.8.2 (2024-08-10)
 
 #### Changed
 

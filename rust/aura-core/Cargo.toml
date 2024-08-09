@@ -1,6 +1,6 @@
 [package]
 name = "aura-core"
-version = "0.8.1"
+version = "0.8.2"
 authors = ["Colin Woodbury <colin@fosskers.ca>"]
 edition = "2021"
 description = "Core types and logic for extended Arch Linux package managers."
