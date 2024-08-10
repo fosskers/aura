@@ -6,6 +6,7 @@
 [![img](https://img.shields.io/hackage/v/aura.svg)](http://hackage.haskell.org/package/aura)
 [![Crates.io Version](https://img.shields.io/crates/v/aura-pm)](https://crates.io/crates/aura-pm)
 ![img](https://img.shields.io/github/downloads/fosskers/aura/total.svg)
+[![Uptime Robot ratio (30 days)](https://img.shields.io/uptimerobot/ratio/m797414036-bda0448875649477b8f9cea7?label=Faur%20Uptime)](https://stats.uptimerobot.com/xacx44XVJx/797414036)
 
   <div>
     :uk:
