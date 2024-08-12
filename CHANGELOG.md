@@ -1,5 +1,11 @@
 # Aura Changelog
 
+## Unreleased
+
+#### Fixed
+
+- Extra `-debug` packages will not be taken into account when determining packages that need upgrades.
+
 ## 4.0.2 (2024-08-10)
 
 #### Changed

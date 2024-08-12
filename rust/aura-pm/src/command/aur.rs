@@ -604,18 +604,29 @@ pub(crate) fn upgrade<'a>(
     debug!("Will ignore: {:?}", env.aur.ignores);
 
     // --- Query database for all non-repo packages --- //
-    let mut foreigns: Vec<aura_core::Package<'a>> = aura_core::foreign_packages(alpm)
+    let foreigns: Vec<aura_core::Package<'a>> = aura_core::foreign_packages(alpm)
         .filter_map(aura_core::Package::from_alpm)
         .collect();
     debug!("Foreign packages: {}", foreigns.len());
-    foreigns.retain(|p| env.aur.ignores.contains(p.name.as_ref()).not());
-    debug!("After excluding ignores: {}", foreigns.len());
+    let foreign_names: HashSet<_> = foreigns.iter().map(|p| p.name.as_ref()).collect();
+    let filtered: Vec<_> = foreigns
+        .iter()
+        .filter(|p| {
+            if let Some(base) = p.name.strip_suffix("-debug") {
+                foreign_names.contains(base).not()
+            } else {
+                true
+            }
+        })
+        .filter(|p| env.aur.ignores.contains(p.name.as_ref()).not())
+        .collect();
+    debug!("After excluding ignores and debugs: {}", filtered.len());
 
     // --- Ensure they all have local clones --- //
     if dryrun.not() {
         aura!(fll, "A-u-fetch-info");
     }
-    let clones: HashSet<PathBuf> = foreigns
+    let clones: HashSet<PathBuf> = filtered
         .par_iter()
         .map(|p| p.name.as_ref())
         .filter_map(|p| {
@@ -675,7 +686,7 @@ pub(crate) fn upgrade<'a>(
 
     // --- Account for VCS packages --- //
     let vcs: Vec<_> = if env.aur.git {
-        foreigns
+        filtered
             .iter()
             .filter(|p| {
                 let n = p.name.as_ref();
