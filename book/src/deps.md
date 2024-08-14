@@ -7,6 +7,18 @@ of dependency load. The output of `-Qi` and `-Si` includes dependency
 information, but only one layer deep in either direction. In these cases, `aura
 deps` is a useful command.
 
+By default it writes a `.png` to the current directory, but with `--open` will
+output to `/tmp` and open the image in the default viewer instead. If the image
+isn't opening in the viewer you prefer, you can alter it in
+`~/.config/mimeapps.list`. For instance:
+
+```
+[Default Applications]
+image/png=swayimg.desktop
+```
+
+The available `.desktop` entries can be found in `/usr/share/applications/`.
+
 ## Displaying Dependencies
 
 ```

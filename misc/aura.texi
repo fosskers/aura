@@ -1521,6 +1521,20 @@ might be, in terms of dependency load. The output of @code{-Qi} and
 @code{-Si} includes dependency information, but only one layer deep in
 either direction. In these cases, @code{aura deps} is a useful command.
 
+@cindex deps --open
+By default it writes a @code{.png} to the current directory, but with
+@code{--open} will output to @code{/tmp} and open the image in the
+default viewer instead. If the image isn't opening in the viewer you
+prefer, you can alter it in @code{~/.config/mimeapps.list}. For
+instance:
+
+@example
+[Default Applications]
+image/png=swayimg.desktop
+@end example
+
+The available @code{.desktop} entries can be found in @code{/usr/share/applications/}.
+
 @node Displaying Dependencies
 @subsection Displaying Dependencies
 @cindex deps, Displaying Dependencies
