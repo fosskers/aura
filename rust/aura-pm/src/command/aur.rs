@@ -513,8 +513,9 @@ fn install_work(
     }
 
     // --- Determine the best build order --- //
-    let order: Vec<Vec<&str>> =
-        aura_core::aur::dependencies::build_order(&to_build).map_err(Error::Deps)?;
+    let is_single = to_build.len() == 1;
+    let order: Vec<Vec<String>> =
+        aura_core::aur::dependencies::build_order(to_build).map_err(Error::Deps)?;
     debug!("Build order: {:?}", order);
 
     // --- Install repo dependencies --- //
@@ -528,7 +529,6 @@ fn install_work(
     }
 
     // --- Build and install each layer of AUR packages --- //
-    let is_single = to_build.len() == 1;
     let caches = env.caches();
     let alpm = env.alpm().map_err(Error::Env)?;
     for raw_layer in order.into_iter().apply(Finished::new) {

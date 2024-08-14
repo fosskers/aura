@@ -6,6 +6,9 @@
 
 - Extra `-debug` packages will not be taken into account when determining packages that need upgrades.
 - `-Auk`: don't display a diff (or even ask to) if the hash didn't change. Useful with `--git`.
+- `-A`: a bug involving incorrect build order which would occasionally lead to
+  top-level packages being marked as dependencies and subsequently being removed
+  via the effects of `-a`.
 
 ## 4.0.2 (2024-08-10)
 

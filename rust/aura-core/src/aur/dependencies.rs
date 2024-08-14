@@ -491,15 +491,32 @@ where
 /// needed.
 ///
 /// ```
-/// let res = aura_core::aur::dependencies::build_order::<()>(&[]).unwrap();
+/// let res = aura_core::aur::dependencies::build_order::<()>(vec![]).unwrap();
 /// assert!(res.is_empty());
 /// ```
-pub fn build_order<E>(to_build: &[Buildable]) -> Result<Vec<Vec<&str>>, Error<E>> {
+pub fn build_order<E>(mut to_build: Vec<Buildable>) -> Result<Vec<Vec<String>>, Error<E>> {
     info!("Determining build order.");
 
-    let graph = dep_graph(to_build);
+    // NOTE 2024-08-15 This re-sorting is a workaround around an issue with the
+    // toposort results that occurs due to a combination of:
+    //
+    //   1. Packages having AUR dependencies.
+    //   2. Package names having a certain alphabetical ordering.
+    //   3. The insertion order in the input Vec relative to that alphabetical ordering.
+    //
+    // Experimentally, it seems that by sorting by dep-count we can avoid the
+    // issue. Note also that this is almost certainly the same issue I was
+    // seeing previously of "Aura uninstalling itself" due to the effects of
+    // `-a`.
+    to_build.sort_by_key(|b| b.deps.len());
+    to_build.reverse();
+    let graph = dep_graph(&to_build);
 
-    petgraph::algo::toposort(&graph, None)
+    // NOTE Testing only.
+    // let dot = Dot::new(&graph);
+    // std::fs::write("dep-graph.dot", format!("{:?}", dot)).unwrap();
+
+    let topo = petgraph::algo::toposort(&graph, None)
         .map_err(|cycle| {
             shortest_cycle(cycle.node_id(), &graph)
                 .into_iter()
@@ -513,8 +530,9 @@ pub fn build_order<E>(to_build: &[Buildable]) -> Result<Vec<Vec<&str>>, Error<E>
         // order again at the very end.
         .map(|ix| graph.node_weight(ix))
         .collect::<Option<Vec<_>>>()
-        .ok_or(Error::MalformedGraph)?
-        .into_iter()
+        .ok_or(Error::MalformedGraph)?;
+
+    topo.into_iter()
         // --- Split the packages by "layer" --- //
         .fold(
             (Vec::new(), Vec::new(), HashSet::new()),
@@ -531,14 +549,14 @@ pub fn build_order<E>(to_build: &[Buildable]) -> Result<Vec<Vec<&str>>, Error<E>
                     // that thanks to the topological sort that they've already
                     // processed into early layers. Also see comment (1) below.
                     deps.extend(&buildable.deps);
-                    (layers, vec![buildable.name.as_str()], deps)
+                    (layers, vec![buildable.name.to_string()], deps)
                 } else {
                     // (1) While all of the Buildable's official (non-AUR) deps
                     // are also included in its `deps` field, only its own name
                     // is ever added to the build order "group", and thus we
                     // never try to mistakenly build an official package as an
                     // AUR one.
-                    group.push(buildable.name.as_str());
+                    group.push(buildable.name.to_string());
                     deps.extend(&buildable.deps);
                     (layers, group, deps)
                 }
@@ -706,7 +724,7 @@ mod test {
         assert_eq!(v.len(), g.node_count());
         assert_eq!(1, g.edge_count());
 
-        let o = build_order::<()>(&v).unwrap();
+        let o = build_order::<()>(v).unwrap();
         assert_eq!(vec![vec!["b"], vec!["a"],], o);
     }
 
@@ -735,7 +753,7 @@ mod test {
         assert_eq!(v.len(), g.node_count());
         assert_eq!(4, g.edge_count());
 
-        let mut o = build_order::<()>(&v).unwrap();
+        let mut o = build_order::<()>(v).unwrap();
         for v in o.iter_mut() {
             v.sort();
         }
@@ -776,10 +794,48 @@ mod test {
         assert_eq!(v.len(), g.node_count());
         assert_eq!(5, g.edge_count());
 
-        let mut o = build_order::<()>(&v).unwrap();
+        let mut o = build_order::<()>(v).unwrap();
         for v in o.iter_mut() {
             v.sort();
         }
         assert_eq!(vec![vec!["d"], vec!["b", "c"], vec!["a", "e", "f"]], o);
+    }
+
+    #[test]
+    fn real_failing_graph() {
+        let v = vec![
+            Buildable {
+                name: "mgba-git".to_string(),
+                deps: HashSet::new(),
+            },
+            Buildable {
+                name: "sway-git".to_string(),
+                deps: vec!["wlroots-git".to_string()].into_iter().collect(),
+            },
+            Buildable {
+                name: "wlroots-git".to_string(),
+                deps: HashSet::new(),
+            },
+            Buildable {
+                name: "timelineproject-hg".to_string(),
+                deps: HashSet::new(),
+            },
+        ];
+
+        let g = dep_graph(&v);
+        assert_eq!(v.len(), g.node_count());
+        assert_eq!(1, g.edge_count());
+
+        let mut o = build_order::<()>(v).unwrap();
+        for v in o.iter_mut() {
+            v.sort();
+        }
+        assert_eq!(
+            vec![
+                vec!["wlroots-git"],
+                vec!["mgba-git", "sway-git", "timelineproject-hg"]
+            ],
+            o
+        );
     }
 }
