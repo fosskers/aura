@@ -182,6 +182,14 @@ nonetheless being updated, and you'd like to know where it came from. Or perhaps
 you'd like to know what the affect of installing some package might be, in terms
 of dependency load. The output of <code>-Qi</code> and <code>-Si</code> includes dependency
 information, but only one layer deep in either direction. In these cases, <code>aura deps</code> is a useful command.</p>
+<p>By default it writes a <code>.png</code> to the current directory, but with <code>--open</code> will
+output to <code>/tmp</code> and open the image in the default viewer instead. If the image
+isn't opening in the viewer you prefer, you can alter it in
+<code>~/.config/mimeapps.list</code>. For instance:</p>
+<pre><code>[Default Applications]
+image/png=swayimg.desktop
+</code></pre>
+<p>The available <code>.desktop</code> entries can be found in <code>/usr/share/applications/</code>.</p>
 <h2 id="displaying-dependencies"><a class="header" href="#displaying-dependencies">Displaying Dependencies</a></h2>
 <pre><code>&gt; aura deps sbcl --open
 </code></pre>
