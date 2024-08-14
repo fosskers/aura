@@ -303,14 +303,16 @@ fn show_diffs(
 ) -> Result<(), Error> {
     let hashes = env.aur.hashes.as_path();
 
-    // Silently skip over any hashes that couldn't be read. This is mostly
-    // likely due to the package being installed for the first time, thus having
-    // no history to compare to.
+    // Silently skip over any hashes that couldn't be read. This is most likely
+    // due to the package being installed for the first time, thus having no
+    // history to compare to.
     match hash_of_last_install(hashes, pkgbase) {
         Err(e) => warn!("Couldn't read latest hash of {}: {}", pkgbase, e),
-        Ok(hash) => {
-            if proceed!(fll, env, "A-build-diff").is_some() {
-                aura_core::git::diff(clone, &hash).map_err(Error::GitDiff)?;
+        Ok(prev_hash) => {
+            let curr_hash = aura_core::git::hash(clone).map_err(Error::GitDiff)?;
+
+            if prev_hash != curr_hash && proceed!(fll, env, "A-build-diff").is_some() {
+                aura_core::git::diff(clone, &prev_hash).map_err(Error::GitDiff)?;
                 proceed!(fll, env, "proceed").ok_or(Error::Cancelled)?;
             }
         }

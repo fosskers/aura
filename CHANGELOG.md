@@ -5,6 +5,7 @@
 #### Fixed
 
 - Extra `-debug` packages will not be taken into account when determining packages that need upgrades.
+- `-Auk`: don't display a diff (or even ask to) if the hash didn't change. Useful with `--git`.
 
 ## 4.0.2 (2024-08-10)
 

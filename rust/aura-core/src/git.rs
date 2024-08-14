@@ -90,6 +90,7 @@ pub fn hash(dir: &Path) -> Result<String, Error> {
         .stdout
         .apply(String::from_utf8)
         .map_err(Error::ReadHash)
+        .map(|s| s.trim().to_string())
 }
 
 /// Display the diff between `master` and a given hash.
