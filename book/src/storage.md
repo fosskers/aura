@@ -5,9 +5,9 @@ configured](configuration.md) in `~/.config/aura/config.toml`.
 
 ## Where are packages built?
 
-By default, packages are built within `~/.cache/aura/builds/`. If a package
-is specified in the `chroot` list in the config, then it will be built in a
-`chroot` environment instead.
+By default, packages are built within `~/.cache/aura/builds/`. Were a package
+specified in the `chroot` list in config, then it will instead be built in a
+`chroot`.
 
 ## Where are packages stored?
 
