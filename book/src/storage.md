@@ -14,14 +14,14 @@ specified in the `chroot` list in config, then it will instead be built in a
 Once built, all packages are sent to Aura's cache: `~/.cache/aura/cache/`.
 
 This directory can grow quite large, but can be cleaned with
-[`-Cc`](downgrading.md). See also `aura stats` for a view of various
-Aura-related directory sizes.
+[`-Cc`](downgrading.md). You can use `aura stats` to view the sizes of
+various Aura-related directories.
 
 ## What other filepaths are there?
 
 Aura stores clones of known AUR packages in `~/.cache/aura/packages/`, and saved
 package set states in `~/.cache/aura/snapshots/`.
 
-Also also reads your `pacman` and `makepkg` configuration, which are generally
+Aura also reads your `pacman` and `makepkg` configuration, which are generally
 expected to be at `/etc/pacman.conf` and `/etc/makepkg.conf` respectively, but
 it will respect the usual environment variables that alter those paths.
