@@ -1,5 +1,11 @@
 # aura-core
 
+## 0.8.3 (2024-08-16)
+
+#### Fixed
+
+- Various bugs.
+
 ## 0.8.2 (2024-08-10)
 
 #### Changed
