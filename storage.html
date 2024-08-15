@@ -186,12 +186,12 @@ specified in the <code>chroot</code> list in config, then it will instead be bui
 <h2 id="where-are-packages-stored"><a class="header" href="#where-are-packages-stored">Where are packages stored?</a></h2>
 <p>Once built, all packages are sent to Aura's cache: <code>~/.cache/aura/cache/</code>.</p>
 <p>This directory can grow quite large, but can be cleaned with
-<a href="downgrading.html"><code>-Cc</code></a>. See also <code>aura stats</code> for a view of various
-Aura-related directory sizes.</p>
+<a href="downgrading.html"><code>-Cc</code></a>. You can use <code>aura stats</code> to view the sizes of
+various Aura-related directories.</p>
 <h2 id="what-other-filepaths-are-there"><a class="header" href="#what-other-filepaths-are-there">What other filepaths are there?</a></h2>
 <p>Aura stores clones of known AUR packages in <code>~/.cache/aura/packages/</code>, and saved
 package set states in <code>~/.cache/aura/snapshots/</code>.</p>
-<p>Also also reads your <code>pacman</code> and <code>makepkg</code> configuration, which are generally
+<p>Aura also reads your <code>pacman</code> and <code>makepkg</code> configuration, which are generally
 expected to be at <code>/etc/pacman.conf</code> and <code>/etc/makepkg.conf</code> respectively, but
 it will respect the usual environment variables that alter those paths.</p>
 
