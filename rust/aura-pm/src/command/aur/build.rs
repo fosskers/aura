@@ -244,7 +244,6 @@ fn build_one(
             }
         });
 
-        // FIXME 2024-07-06 I suspect this doesn't account for "debug" packages.
         let tars_to_copy = match special {
             None => tarballs,
             Some(s) => tarballs

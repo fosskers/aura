@@ -147,6 +147,11 @@ impl<'a> Package<'a> {
     /// let pkg = Package::from_path(simple).unwrap();
     /// assert_eq!("aura-bin", pkg.name);
     /// assert_eq!("3.2.1-1", pkg.version.to_string());
+    ///
+    /// let uncompressed = Path::new("aura-bin-3.2.1-1-x86_64.pkg.tar");
+    /// let pkg = Package::from_path(uncompressed).unwrap();
+    /// assert_eq!("aura-bin", pkg.name);
+    /// assert_eq!("3.2.1-1", pkg.version.to_string());
     /// ```
     pub fn from_path(path: &Path) -> Option<Package<'static>> {
         path.file_name()

@@ -9,6 +9,7 @@
 - `-A`: a bug involving incorrect build order which would occasionally lead to
   top-level packages being marked as dependencies and subsequently being removed
   via the effects of `-a`.
+- `-A`: tarballs built without compression (i.e. that end in `pkg.tar`) will be properly detected.
 
 ## 4.0.2 (2024-08-10)
 

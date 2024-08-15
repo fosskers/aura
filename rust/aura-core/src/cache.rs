@@ -259,10 +259,13 @@ pub fn missing_tarballs<'a>(
 ///
 /// assert!(is_package(Path::new("libebml-1.3.10-1-x86_64.pkg.tar.xz")));
 /// assert!(is_package(Path::new("libebml-1.4.0-1-x86_64.pkg.tar.zst")));
+/// assert!(is_package(Path::new("libebml-1.4.0-1-x86_64.pkg.tar")));
 /// ```
 pub fn is_package(path: &Path) -> bool {
     path.to_str()
-        .map(|p| p.ends_with(".pkg.tar.zst") || p.ends_with(".pkg.tar.xz"))
+        .map(|p| {
+            p.ends_with(".pkg.tar.zst") || p.ends_with(".pkg.tar.xz") || p.ends_with(".pkg.tar")
+        })
         .unwrap_or(false)
 }
 
