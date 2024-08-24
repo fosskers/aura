@@ -338,7 +338,7 @@ where
                     // FIXME Fri Feb 18 2022 Same here as above.
                     drop(alpm);
 
-                    debug!("{} is may be an AUR package.", pr);
+                    debug!("{} may be an AUR package.", pr);
                     let path = pull_or_clone(fetch, clone_d, parent, &pkg)?;
                     debug!("Parsing .SRCINFO for {}", pkg);
                     let full = path.join(".SRCINFO");

@@ -182,7 +182,8 @@ fn restore_snapshot(
             })
             .map(|pp| pp.into_pathbuf().into_os_string());
 
-        crate::pacman::sudo_pacman(env, "-U", NOTHING, tarballs).map_err(Error::Pacman)?;
+        crate::pacman::pacman_install_from_tarball(env, NOTHING, tarballs)
+            .map_err(Error::Pacman)?;
     }
 
     // Remove packages that weren't installed within the chosen snapshot.

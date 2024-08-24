@@ -208,6 +208,11 @@ impl Env {
 
         Ok(())
     }
+
+    /// The location of the Pacman database lockfile.
+    pub(crate) fn lock_file(&self) -> PathBuf {
+        Path::new(&self.pacman.db_path).join("db.lck")
+    }
 }
 
 #[derive(Debug, Deserialize)]

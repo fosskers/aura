@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+#### Changed
+
+- Installation attempts will now pause if a Pacman database lockfile is detected
+  (usually found at `/var/lib/pacman/db.lck`). Aura will repeatedly sleep and
+  reattempt for up to 1 minute before failing; this is to prevent an infinite
+  loop in scripts.
+
 #### Fixed
 
 - Restore support for `-Qtt`.

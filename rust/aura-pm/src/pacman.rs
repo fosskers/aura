@@ -4,9 +4,11 @@ use crate::env::Env;
 use crate::error::Nested;
 use crate::localization::Localised;
 use i18n_embed_fl::fl;
+use log::debug;
 use log::error;
 use std::ffi::OsStr;
 use std::process::Command;
+use std::time::Duration;
 
 pub(crate) enum Error {
     ExternalCmd(std::io::Error),
@@ -105,6 +107,16 @@ where
     S: AsRef<OsStr>,
     T: AsRef<OsStr>,
 {
+    let lock = env.lock_file();
+    let secs = Duration::from_secs(3);
+    let mut tries = 0;
+
+    while lock.exists() && tries < 20 {
+        tries += 1;
+        debug!("{} exists. Sleeping... ({})", lock.display(), tries);
+        std::thread::sleep(secs);
+    }
+
     sudo_pacman(env, "-U", flags, args).map_err(|_| Error::InstallFromTarball)
 }
 

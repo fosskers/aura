@@ -120,7 +120,8 @@ pub(crate) fn downgrade(
         return Err(Error::NothingToDo);
     }
 
-    crate::pacman::sudo_pacman(env, "-U", NOTHING, to_downgrade).map_err(Error::Pacman)?;
+    crate::pacman::pacman_install_from_tarball(env, NOTHING, to_downgrade)
+        .map_err(Error::Pacman)?;
     green!(fll, "common-done");
     Ok(())
 }
