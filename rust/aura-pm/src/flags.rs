@@ -997,8 +997,8 @@ pub struct Query {
     #[clap(long, short, display_order = 1)]
     search: bool,
     /// List packages not (optionally) required by any package (-tt to ignore optdepends) [filter].
-    #[clap(long, short = 't', display_order = 1)]
-    unrequired: bool,
+    #[clap(long, short = 't', action(ArgAction::Count), display_order = 1)]
+    unrequired: u8,
     /// List outdated packages [filter].
     #[clap(long, short, display_order = 1)]
     upgrades: bool,

@@ -1,5 +1,11 @@
 # Aura Changelog
 
+## Unreleased
+
+#### Fixed
+
+- Restore support for `-Qtt`.
+
 ## 4.0.3 (2024-08-16)
 
 #### Fixed
