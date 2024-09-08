@@ -78,6 +78,7 @@ pub struct Args {
         long,
         global = true,
         hide_short_help = true,
+        hide_long_help = true,
         display_order = 10
     )]
     pub english: bool,
@@ -88,6 +89,7 @@ pub struct Args {
         global = true,
         alias = "日本語",
         hide_short_help = true,
+        hide_long_help = true,
         display_order = 10
     )]
     pub japanese: bool,
@@ -98,6 +100,7 @@ pub struct Args {
         global = true,
         alias = "deutsch",
         hide_short_help = true,
+        hide_long_help = true,
         display_order = 10
     )]
     pub german: bool,
@@ -108,6 +111,7 @@ pub struct Args {
         global = true,
         alias = "polski",
         hide_short_help = true,
+        hide_long_help = true,
         display_order = 10
     )]
     pub polish: bool,
@@ -118,6 +122,7 @@ pub struct Args {
         global = true,
         alias = "hrvatski",
         hide_short_help = true,
+        hide_long_help = true,
         display_order = 10
     )]
     pub croatian: bool,
@@ -128,6 +133,7 @@ pub struct Args {
         global = true,
         alias = "svenska",
         hide_short_help = true,
+        hide_long_help = true,
         display_order = 10
     )]
     pub swedish: bool,
@@ -138,6 +144,7 @@ pub struct Args {
         global = true,
         alias = "español",
         hide_short_help = true,
+        hide_long_help = true,
         display_order = 10
     )]
     pub spanish: bool,
@@ -148,6 +155,7 @@ pub struct Args {
         global = true,
         alias = "português",
         hide_short_help = true,
+        hide_long_help = true,
         display_order = 10
     )]
     pub portuguese: bool,
@@ -158,6 +166,7 @@ pub struct Args {
         global = true,
         alias = "français",
         hide_short_help = true,
+        hide_long_help = true,
         display_order = 10
     )]
     pub french: bool,
@@ -168,6 +177,7 @@ pub struct Args {
         global = true,
         alias = "русский",
         hide_short_help = true,
+        hide_long_help = true,
         display_order = 10
     )]
     pub russian: bool,
@@ -178,6 +188,7 @@ pub struct Args {
         global = true,
         alias = "italiano",
         hide_short_help = true,
+        hide_long_help = true,
         display_order = 10
     )]
     pub italian: bool,
@@ -188,6 +199,7 @@ pub struct Args {
         global = true,
         alias = "cрпски",
         hide_short_help = true,
+        hide_long_help = true,
         display_order = 10
     )]
     pub serbian: bool,
@@ -198,6 +210,7 @@ pub struct Args {
         global = true,
         alias = "norsk",
         hide_short_help = true,
+        hide_long_help = true,
         display_order = 10
     )]
     pub norwegian: bool,
@@ -207,6 +220,7 @@ pub struct Args {
         long,
         global = true,
         hide_short_help = true,
+        hide_long_help = true,
         display_order = 10
     )]
     pub indonesian: bool,
@@ -217,6 +231,7 @@ pub struct Args {
         global = true,
         alias = "简体字",
         hide_short_help = true,
+        hide_long_help = true,
         display_order = 10
     )]
     pub simplified_chinese: bool,
@@ -226,6 +241,7 @@ pub struct Args {
         long,
         global = true,
         hide_short_help = true,
+        hide_long_help = true,
         display_order = 10
     )]
     pub esperanto: bool,
@@ -236,6 +252,7 @@ pub struct Args {
         global = true,
         alias = "nederlands",
         hide_short_help = true,
+        hide_long_help = true,
         display_order = 10
     )]
     pub dutch: bool,
@@ -245,6 +262,7 @@ pub struct Args {
         long,
         global = true,
         hide_short_help = true,
+        hide_long_help = true,
         display_order = 10
     )]
     pub turkish: bool,
@@ -254,6 +272,7 @@ pub struct Args {
         long,
         global = true,
         hide_short_help = true,
+        hide_long_help = true,
         display_order = 10
     )]
     pub arabic: bool,
@@ -264,6 +283,7 @@ pub struct Args {
         global = true,
         alias = "українська",
         hide_short_help = true,
+        hide_long_help = true,
         display_order = 10
     )]
     pub ukrainian: bool,
@@ -274,6 +294,7 @@ pub struct Args {
         global = true,
         alias = "română",
         hide_short_help = true,
+        hide_long_help = true,
         display_order = 10
     )]
     pub romanian: bool,
@@ -283,6 +304,7 @@ pub struct Args {
         long,
         global = true,
         hide_short_help = true,
+        hide_long_help = true,
         display_order = 10
     )]
     pub vietnamese: bool,
@@ -293,6 +315,7 @@ pub struct Args {
         global = true,
         alias = "český",
         hide_short_help = true,
+        hide_long_help = true,
         display_order = 10
     )]
     pub czech: bool,
@@ -303,6 +326,7 @@ pub struct Args {
         global = true,
         alias = "한국어",
         hide_short_help = true,
+        hide_long_help = true,
         display_order = 10
     )]
     pub korean: bool,
@@ -313,6 +337,7 @@ pub struct Args {
         global = true,
         alias = "हिंदी",
         hide_short_help = true,
+        hide_long_help = true,
         display_order = 10
     )]
     pub hindi: bool,
