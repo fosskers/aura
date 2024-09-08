@@ -114,6 +114,7 @@ fn main() -> ExitCode {
                     ExitCode::FAILURE
                 }
                 Ok(fll) => match work(args, env, &fll) {
+                    Err(Error::Pacman(crate::pacman::Error::Misc)) => ExitCode::FAILURE,
                     Err(e) => {
                         e.nested();
                         aln!(e.localise(&fll).red());
