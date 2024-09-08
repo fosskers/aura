@@ -1,5 +1,16 @@
 # Aura Changelog
 
+## 4.0.5 (2024-09-08)
+
+#### Changed
+
+- Language options have been hidden from the output of `--help`. They can
+  otherwise be viewed in the manpage.
+
+#### Fixed
+
+- Avoid printing error messages related to Pacman in certain scenarios.
+
 ## 4.0.4 (2024-08-24)
 
 #### Changed
