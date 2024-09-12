@@ -22,6 +22,7 @@ impl FromStr for Date {
     }
 }
 
+pub const BENGALI: LanguageIdentifier = langid!("bn-BD");
 pub const CROATIAN: LanguageIdentifier = langid!("hr-HR");
 pub const ENGLISH: LanguageIdentifier = langid!("en-US");
 pub const GERMAN: LanguageIdentifier = langid!("de-DE");

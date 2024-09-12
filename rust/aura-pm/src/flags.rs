@@ -56,6 +56,9 @@ pub const AURA_GLOBALS: &[&str] = &[
     "--한국어",
     "--hindi",
     "--हिंदी",
+    "--bengali",
+    "--bangla",
+    "--বাংলা",
 ];
 
 /// Commandline arguments to the Aura executable.
@@ -341,6 +344,17 @@ pub struct Args {
         display_order = 10
     )]
     pub hindi: bool,
+    /// Output in Bengali (alias: bangla, বাংলা).
+    #[clap(
+        group = "language",
+        long,
+        global = true,
+        aliases = &["bangla, বাংলা"],
+        hide_short_help = true,
+        hide_long_help = true,
+        display_order = 10
+    )]
+    pub bengali: bool,
 
     // --- Other Aura Options --- //
     /// Minimum level of Aura log messages to display.

@@ -16,6 +16,7 @@ use unic_langid::LanguageIdentifier;
 
 pub(crate) const TRANSLATORS: &[(&str, &str)] = &[
     ("Arabic", "\"Array in a Matrix\""),
+    ("Bengali", "Saif Shahriar"),
     ("Chinese", "Kai Zhang / Alex3236"),
     ("Croatian", "Denis Kasak / \"stranac\""),
     ("Czech", "Daniel Rosel"),
@@ -79,6 +80,7 @@ where
         ("cs", _) => Some(aura_pm::CZECH),
         ("ko", _) => Some(aura_pm::KOREAN),
         ("hi", _) => Some(aura_pm::HINDI),
+        ("bn", _) => Some(aura_pm::BENGALI),
         _ => None,
     }
 }
