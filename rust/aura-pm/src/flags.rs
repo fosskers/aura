@@ -398,6 +398,7 @@ impl Args {
             _ if self.czech => Some(crate::CZECH),
             _ if self.korean => Some(crate::KOREAN),
             _ if self.hindi => Some(crate::HINDI),
+            _ if self.bengali => Some(crate::BENGALI),
             _ => None,
         }
     }
