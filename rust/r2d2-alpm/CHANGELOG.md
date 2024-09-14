@@ -1,5 +1,11 @@
 # r2d2-alpm
 
+## 0.2.1 (2024-09-15)
+
+#### Fixed
+
+- Account for newest Pacman and `alpm` version.
+
 ## 0.2.0 (2023-03-19)
 
 #### Added

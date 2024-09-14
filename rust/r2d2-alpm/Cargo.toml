@@ -1,6 +1,6 @@
 [package]
 name = "r2d2-alpm"
-version = "0.2.0"
+version = "0.2.1"
 authors = ["Colin Woodbury <colin@fosskers.ca>"]
 edition = "2021"
 description = "R2D2 resource pools for managing ALPM connections."
