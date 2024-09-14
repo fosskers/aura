@@ -50,6 +50,8 @@ Looking for help? Try:
 Looking to migrate from Aura 3 to Aura 4? See the [Migration
 Guide](https://fosskers.github.io/aura/migration.html).
 
+If this project is useful to you, please consider [sponsoring it](https://github.com/sponsors/fosskers).
+
 <!-- markdown-toc start - Don't edit this section. Run M-x markdown-toc-refresh-toc -->
 **Table of Contents**
 
