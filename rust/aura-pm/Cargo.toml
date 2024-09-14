@@ -17,7 +17,7 @@ path = "src/main.rs"
 aura-core = { version = "0.8.3", path = "../aura-core" }
 r2d2-alpm = { version = "0.2", path = "../r2d2-alpm" }
 
-alpm = "3.0"
+alpm = "4.0"
 applying = "1.0.0"
 basic-toml = "0.1"
 clap = { version = "4.5", default-features = false, features = ["std", "derive", "help", "usage", "error-context"] }
@@ -27,11 +27,11 @@ i18n-embed = { version = "0.15", features = ["fluent-system"] }
 i18n-embed-fl = "0.9"
 itertools = "0.13"
 karen = "0.1"
-linya = "0.3"
+linya = "0.3.1"
 log = "0.4"
 nonempty-collections = "0.2.5"
 num_cpus = "1.16"
-pacmanconf = "2.0"
+pacmanconf = "3.0"
 r2d2 = "0.8"
 rayon = "1.8"
 rust-embed = "8.0"

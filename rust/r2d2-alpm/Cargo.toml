@@ -10,9 +10,9 @@ license = "MIT"
 keywords = ["database", "pool", "archlinux", "alpm", "pacman"]
 
 [dependencies]
-alpm = "3.0"
-alpm-utils = "3.0"
-pacmanconf = "2.0"
+alpm = "4.0"
+alpm-utils = "4.0"
+pacmanconf = "3.0"
 r2d2 = "0.8"
 
 [dev-dependencies]
