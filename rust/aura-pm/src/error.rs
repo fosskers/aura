@@ -3,6 +3,7 @@
 use crate::localization::Localised;
 use aura_core::aur::dependencies as deps;
 use i18n_embed::fluent::FluentLanguageLoader;
+use i18n_embed_fl::fl;
 use log::error;
 
 /// Error type for all issues that can occur in the Aura library or executable.
@@ -19,6 +20,7 @@ pub(crate) enum Error {
     Check(crate::check::Error),
     Stats(crate::stats::Error),
     Deps(crate::deps::Error),
+    AuraRunWithSudo,
 }
 
 impl From<crate::deps::Error> for Error {
@@ -96,6 +98,7 @@ impl Nested for Error {
             Error::Check(e) => e.nested(),
             Error::Stats(e) => e.nested(),
             Error::Deps(e) => e.nested(),
+            Error::AuraRunWithSudo => {}
         }
     }
 }
@@ -114,6 +117,7 @@ impl Localised for Error {
             Error::Check(e) => e.localise(fll),
             Error::Stats(e) => e.localise(fll),
             Error::Deps(e) => e.localise(fll),
+            Error::AuraRunWithSudo => fl!(fll, "err-sudo"),
         }
     }
 }

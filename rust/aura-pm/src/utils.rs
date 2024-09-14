@@ -1,8 +1,5 @@
 //! Various utility functions.
 
-use crate::env::Env;
-use crate::error::Nested;
-use crate::localization::Localised;
 use colored::ColoredString;
 use colored::Colorize;
 use i18n_embed::fluent::FluentLanguageLoader;
@@ -132,21 +129,14 @@ pub(crate) fn select(msg: &str, max: usize) -> Result<usize, std::io::Error> {
     }
 }
 
-pub(crate) struct SudoError;
-
-impl Nested for SudoError {
-    fn nested(&self) {}
-}
-
-impl Localised for SudoError {
-    fn localise(&self, fll: &FluentLanguageLoader) -> String {
-        fl!(fll, "err-sudo")
-    }
-}
-
 /// Is Aura being run by the root user?
 pub(crate) fn is_root_user() -> bool {
     matches!(karen::check(), RunningAs::Root)
+}
+
+/// Is Aura being run undo `sudo`? It shouldn't be!
+pub(crate) fn is_sudo_user() -> bool {
+    matches!(karen::check(), RunningAs::Root) && std::env::var("SUDO_USER").is_ok()
 }
 
 /// An [`Iterator`] that knows if the current iteration step is the last one.

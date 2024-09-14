@@ -138,6 +138,13 @@ fn env(args: &Args) -> Result<Env, Error> {
 fn work(args: Args, env: Env, fll: &FluentLanguageLoader) -> Result<(), Error> {
     info!("Language: {}", fll.current_language().language.as_str());
 
+    // Running Aura with sudo is not supported as it conflicts with the `nobody`
+    // user's lack of a `$HOME`, which causes problems for certain build tools
+    // that assume they can write there.
+    if utils::is_sudo_user() {
+        return Err(Error::AuraRunWithSudo);
+    }
+
     match args.subcmd {
         // --- Pacman Commands --- //
         SubCmd::Database(d) => pacman(&env, d.needs_sudo())?,
