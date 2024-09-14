@@ -189,7 +189,11 @@ fn work(args: Args, env: Env, fll: &FluentLanguageLoader) -> Result<(), Error> {
         }
         SubCmd::Cache(c) if c.search.is_some() => cache::search(&env.caches(), &c.search.unwrap())?,
         SubCmd::Cache(c) if c.backup.is_some() => cache::backup(fll, &env, &c.backup.unwrap())?,
-        SubCmd::Cache(Cache { clean: Some(n), .. }) => cache::clean(&env, fll, n)?,
+        SubCmd::Cache(Cache {
+            clean: Some(n),
+            clean_uninstalled,
+            ..
+        }) => cache::clean(&env, fll, n, clean_uninstalled)?,
         SubCmd::Cache(c) if c.clean_unsaved => cache::clean_not_saved(fll, &env)?,
         SubCmd::Cache(c) if c.invalid => cache::invalid(&env, fll, &env.alpm()?, &env.caches())?,
         SubCmd::Cache(c) if c.list => cache::list(&env.caches())?,

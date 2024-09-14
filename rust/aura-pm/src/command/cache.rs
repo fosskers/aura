@@ -47,6 +47,7 @@ pub(crate) enum Error {
     CurrDir(std::io::Error),
     Mkdir(PathBuf, std::io::Error),
     Date(time::error::Format),
+    Env(crate::env::Error),
 }
 
 impl Nested for Error {
@@ -64,6 +65,7 @@ impl Nested for Error {
             Error::CurrDir(e) => error!("{e}"),
             Error::Mkdir(_, e) => error!("{e}"),
             Error::Date(e) => error!("{e}"),
+            Error::Env(e) => e.nested(),
         }
     }
 }
@@ -83,6 +85,7 @@ impl Localised for Error {
             Error::CurrDir(_) => fl!(fll, "C-b-curr"),
             Error::Mkdir(p, _) => fl!(fll, "dir-mkdir", dir = p.utf8()),
             Error::Date(_) => fl!(fll, "err-time-format"),
+            Error::Env(_) => fl!(fll, "err-alpm"),
         }
     }
 }
@@ -259,7 +262,12 @@ pub(crate) fn search(caches: &[&Path], term: &str) -> Result<(), Error> {
 }
 
 /// Delete all but `keep`-many old tarballs for each package in the cache.
-pub(crate) fn clean(env: &Env, fll: &FluentLanguageLoader, keep: usize) -> Result<(), Error> {
+pub(crate) fn clean(
+    env: &Env,
+    fll: &FluentLanguageLoader,
+    keep: usize,
+    uninstalled: bool,
+) -> Result<(), Error> {
     let caches = env.caches();
     debug!("Caches: {:?}", caches);
 
@@ -271,6 +279,8 @@ pub(crate) fn clean(env: &Env, fll: &FluentLanguageLoader, keep: usize) -> Resul
     // Proceed if the user accepts.
     proceed!(fll, env, "proceed").ok_or(Error::Cancelled)?;
 
+    let alpm = env.alpm().map_err(Error::Env)?;
+    let db = alpm.as_ref().localdb();
     let elevation = env.sudo();
 
     // Get all the tarball paths, sort and group them by name, and then remove them.
@@ -278,6 +288,7 @@ pub(crate) fn clean(env: &Env, fll: &FluentLanguageLoader, keep: usize) -> Resul
         .sorted_by(|p0, p1| p1.cmp(p0)) // Forces a `collect` underneath.
         .chunk_by(|pp| pp.as_package().name.clone()) // TODO Naughty clone.
         .into_iter()
+        .filter(|(name, _)| !uninstalled || db.pkg(name.as_ref()).is_err())
         .flat_map(|(_, group)| group.skip(keep)) // Thanks to the reverse-sort above, `group` is already backwards.
         .for_each(|pp| {
             let _ = pp.sudo_remove_with_sig(elevation); // TODO Handle this error better?

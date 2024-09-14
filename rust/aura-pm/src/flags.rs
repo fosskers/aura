@@ -1376,9 +1376,13 @@ pub struct Cache {
     #[clap(group = "cache", short, long, value_name = "N", display_order = 1)]
     pub clean: Option<usize>,
 
-    /// [-c] Delete only those tarballs which aren't present in a snapshot.
+    /// Delete tarballs which aren't present in a snapshot.
     #[clap(group = "cache", long = "notsaved", short = 'n', display_order = 1)]
     pub clean_unsaved: bool,
+
+    /// [-c] Delete tarballs for currently uninstalled packages.
+    #[clap(long = "uninstalled", short = 'u', display_order = 1)]
+    pub clean_uninstalled: bool,
 
     /// Look up specific packages for info on their cache entries.
     #[clap(group = "cache", short, long, value_name = "pkg(s)", num_args = 1.., display_order = 1)]

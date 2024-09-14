@@ -1,5 +1,11 @@
 # Aura Changelog
 
+## Unreleased
+
+#### Added
+
+- `-Cc`: A new `-u` switch that causes only uninstalled packages to be checked and deleted.
+
 ## 4.0.5 (2024-09-08)
 
 #### Changed
