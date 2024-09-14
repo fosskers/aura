@@ -343,12 +343,12 @@ pub struct Args {
         display_order = 10
     )]
     pub hindi: bool,
-    /// Output in Bengali (alias: bangla).
+    /// Output in Bengali (aliases: বাংলা, bangla).
     #[clap(
         group = "language",
         long,
         global = true,
-        alias = "bangla",
+        aliases = ["bangla", "বাংলা"],
         hide_short_help = true,
         hide_long_help = true,
         display_order = 10

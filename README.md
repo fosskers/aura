@@ -32,6 +32,7 @@
     :czech_republic:
     :kr:
     :india:
+    :bangladesh:
   </div>
   <br>
   
@@ -335,6 +336,7 @@ Aura has been translated by these generous people:
 | Language   | Translators                                     |
 |------------|-------------------------------------------------|
 | Arabic     | "Array in a Matrix"                             |
+| Bengali    | Saif Shahriar                                   |
 | Chinese    | Kai Zhang and Alex3236                          |
 | Croatian   | Denis Kasak and "stranac"                       |
 | Czech      | Daniel Rosel                                    |
