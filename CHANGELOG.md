@@ -1,5 +1,19 @@
 # Aura Changelog
 
+## 4.0.7 (2024-09-15)
+
+Pacman 7 has been released. See [here][pac7] for more information.
+
+To upgrade Aura, you will need to do an `-Syu` first to get the new version of
+`alpm`, after which Aura will temporarily break. Follow the manual building
+instructions found in the README to get around this.
+
+#### Fixed
+
+- Account for the new version of Pacman and `alpm`.
+
+[pac7]: https://archlinux.org/news/manual-intervention-for-pacman-700-and-local-repositories-required/
+
 ## 4.0.6 (2024-09-14)
 
 #### Added
