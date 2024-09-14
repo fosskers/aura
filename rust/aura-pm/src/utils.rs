@@ -144,15 +144,6 @@ impl Localised for SudoError {
     }
 }
 
-/// Escalate the privileges of the entire Aura process, if necessary.
-pub(crate) fn sudo(env: &Env) -> Result<(), SudoError> {
-    karen::builder()
-        .wrapper(env.sudo())
-        .with_env(&["LANG", "EDITOR"])
-        .map_err(|_| SudoError)
-        .void()
-}
-
 /// Is Aura being run by the root user?
 pub(crate) fn is_root_user() -> bool {
     matches!(karen::check(), RunningAs::Root)

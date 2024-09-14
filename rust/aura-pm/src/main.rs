@@ -206,9 +206,7 @@ fn work(args: Args, env: Env, fll: &FluentLanguageLoader) -> Result<(), Error> {
         SubCmd::Log(l) => logs::view(env.alpm_log(), l.before, l.after)?,
         // --- Orphan Packages --- //
         SubCmd::Orphans(o) if o.abandon => orphans::remove(&env, &env.alpm()?, fll)?,
-        SubCmd::Orphans(o) if !o.adopt.is_empty() => {
-            orphans::adopt(&env, &env.alpm()?, fll, o.adopt)?
-        }
+        SubCmd::Orphans(o) if !o.adopt.is_empty() => orphans::adopt(&env, o.adopt)?,
         SubCmd::Orphans(o) if o.elderly => orphans::elderly(&env.alpm()?),
         SubCmd::Orphans(_) => orphans::list(&env.alpm()?),
         // --- PKGBUILD Analysis --- //

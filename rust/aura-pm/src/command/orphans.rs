@@ -19,6 +19,7 @@ pub(crate) enum Error {
     Sudo(crate::utils::SudoError),
     NoneExist,
     Removal(crate::pacman::Error),
+    Adopt(crate::pacman::Error),
 }
 
 impl Nested for Error {
@@ -28,6 +29,7 @@ impl Nested for Error {
             Error::Sudo(e) => e.nested(),
             Error::NoneExist => {}
             Error::Removal(e) => e.nested(),
+            Error::Adopt(e) => e.nested(),
         }
     }
 }
@@ -39,6 +41,7 @@ impl Localised for Error {
             Error::NoneExist => fl!(fll, "err-none-exist"),
             Error::SetExplicit(p, _) => fl!(fll, "O-explicit-err", pkg = p.as_str()),
             Error::Removal(e) => e.localise(fll),
+            Error::Adopt(e) => e.localise(fll),
         }
     }
 }
@@ -56,33 +59,8 @@ pub(crate) fn elderly(alpm: &Alpm) {
 }
 
 /// Sets a package's install reason to "as explicit". An alias for `-D --asexplicit`.
-pub(crate) fn adopt(
-    env: &Env,
-    alpm: &Alpm,
-    fll: &FluentLanguageLoader,
-    // TODO 2024-03-18 Make this NEVec.
-    packages: Vec<String>,
-) -> Result<(), Error> {
-    crate::utils::sudo(env).map_err(Error::Sudo)?;
-
-    let db = alpm.as_ref().localdb();
-    let reals: Vec<_> = packages
-        .into_iter()
-        .filter_map(|p| db.pkg(p).ok())
-        .collect();
-
-    // Exit early if no real packages were given.
-    if reals.is_empty() {
-        return Err(Error::NoneExist);
-    }
-
-    for p in reals {
-        p.set_reason(PackageReason::Explicit)
-            .map_err(|e| Error::SetExplicit(p.name().to_string(), e))?;
-        green!(fll, "O-adopt", pkg = p.name());
-    }
-
-    Ok(())
+pub(crate) fn adopt(env: &Env, packages: Vec<String>) -> Result<(), Error> {
+    crate::pacman::sudo_pacman(env, "-D", ["--asexplicit"], packages).map_err(Error::Adopt)
 }
 
 /// Uninstall all orphan packages.
