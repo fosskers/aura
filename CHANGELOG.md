@@ -1,10 +1,15 @@
 # Aura Changelog
 
-## Unreleased
+## 4.0.6 (2024-09-14)
 
 #### Added
 
+- Bengali translations thanks to Saif Shahriar. ধন্যবাদ!
 - `-Cc`: A new `-u` switch that causes only uninstalled packages to be checked and deleted.
+
+#### Fixed
+
+- Usage of `sudo` now results in an error.
 
 ## 4.0.5 (2024-09-08)
 
