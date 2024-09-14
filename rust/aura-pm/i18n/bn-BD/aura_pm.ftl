@@ -91,10 +91,6 @@ L-recent = সাম্প্রতিক কার্যকলাপ
 L-search-err = আপনার লগ { $cmd } দিয়ে খোঁজার সময় ব্যর্থ হয়েছে।
 L-view-err = আপনার ALPM লগ খোলায় ব্যর্থ হয়েছে।
 
-# Orphans (-O)
-O-adopt = { $pkg } এখন স্পষ্টভাবে ইনস্টল হিসেবে চিহ্নিত করা হয়েছে।
-O-explicit-err = { $pkg } স্পষ্টভাবে ইনস্টল হিসেবে চিহ্নিত করতে ব্যর্থ হয়েছে।
-
 # Opening Pages (open)
 open-err = { $url } খোলায় ব্যর্থ হয়েছে।
 
@@ -223,7 +219,6 @@ err-file-write = ফাইলে লিখতে ব্যর্থ: { $file }
 err-json-decode = JSON ডিকোড করতে ব্যর্থ: { $url }
 err-json-write = JSON ফাইলে লিখতে ব্যর্থ: { $file }
 # err-mutex = A mutex was poisoned.
-err-none-exist = নির্দিষ্ট কোনো প্যাকেজ বিদ্যমান নেই।
 err-pool-create = ALPM সংযোগ পুল তৈরি করতে ব্যর্থ হয়েছে।
 err-pool-get = সংযোগ পুল থেকে ALPM হ্যান্ডেল পেতে ব্যর্থ হয়েছে।
 err-read-dir = ডিরেক্টরি পড়তে ব্যর্থ হয়েছে: { $dir }

@@ -91,10 +91,6 @@ L-recent = 近況
 L-search-err = { $cmd } でのログの検索が失敗した。
 L-view-err = ALPMログを開けなかった。
 
-# Orphans (-O)
-O-adopt = { $pkg } は「explicitly installed」状態にした。
-O-explicit-err = { $pkg } を「explicitly installed」にできなかった。
-
 # Opening Pages (open)
 open-err = { $url }を開けなかった。
 
@@ -219,7 +215,6 @@ err-file-write = 書き込みが失敗した： { $file }
 err-json-decode = JSON の読み込みが失敗した： { $url }
 err-json-write = JSON の書き込みが失敗した： { $file }
 err-mutex = ある Mutex が腐敗してしまった。
-err-none-exist = 指定されたパッケージのどれも存在しない。
 err-pool-create = ALPM の接続プールを作れなかった。
 err-pool-get = 接続プールからハンドルをもらえなかった。
 err-read-dir = フォルダの読み込みが失敗した： { $dir }

@@ -5,19 +5,13 @@ use crate::error::Nested;
 use crate::green;
 use crate::localization::Localised;
 use crate::utils::NOTHING;
-use alpm::PackageReason;
 use applying::Apply;
 use colored::*;
 use i18n_embed::fluent::FluentLanguageLoader;
-use i18n_embed_fl::fl;
-use log::error;
 use r2d2_alpm::Alpm;
 use std::ops::Not;
 
 pub(crate) enum Error {
-    SetExplicit(String, alpm::Error),
-    Sudo(crate::utils::SudoError),
-    NoneExist,
     Removal(crate::pacman::Error),
     Adopt(crate::pacman::Error),
 }
@@ -25,9 +19,6 @@ pub(crate) enum Error {
 impl Nested for Error {
     fn nested(&self) {
         match self {
-            Error::SetExplicit(_, e) => error!("{e}"),
-            Error::Sudo(e) => e.nested(),
-            Error::NoneExist => {}
             Error::Removal(e) => e.nested(),
             Error::Adopt(e) => e.nested(),
         }
@@ -37,9 +28,6 @@ impl Nested for Error {
 impl Localised for Error {
     fn localise(&self, fll: &FluentLanguageLoader) -> String {
         match self {
-            Error::Sudo(e) => e.localise(fll),
-            Error::NoneExist => fl!(fll, "err-none-exist"),
-            Error::SetExplicit(p, _) => fl!(fll, "O-explicit-err", pkg = p.as_str()),
             Error::Removal(e) => e.localise(fll),
             Error::Adopt(e) => e.localise(fll),
         }

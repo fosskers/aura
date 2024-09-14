@@ -91,10 +91,6 @@ L-recent = Ostatnie akcje
 # L-search-err = Searching your logs via { $cmd } failed.
 # L-view-err = Failed to open your ALPM log.
 
-# Orphans (-O)
-# O-adopt = { $pkg } now marked as explicitly installed.
-# O-explicit-err = Failed to mark { $pkg } as explicitly installed.
-
 # Opening Pages (open)
 # open-err = Failed to open { $url }.
 
@@ -223,7 +219,6 @@ env-pconf = Nie udało się odczytać twojego pliku pacman.conf.
 # err-json-decode = Failed to decode JSON from: { $url }
 # err-json-write = Failed to write JSON to: { $file }
 # err-mutex = A mutex was poisoned.
-# err-none-exist = None of the specified packages exist.
 # err-pool-create = Failed to create an ALPM connection pool.
 # err-pool-get = Failed to get an ALPM handle from the connection pool.
 # err-read-dir = Failed to read directory: { $dir }
