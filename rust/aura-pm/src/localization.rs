@@ -193,7 +193,10 @@ pub(crate) fn load(
     let loader = fluent_language_loader!();
     loader.load_languages(
         &Translations,
-        &[lang.as_ref().unwrap_or_else(|| loader.fallback_language())],
+        &[lang
+            .as_ref()
+            .unwrap_or_else(|| loader.fallback_language())
+            .clone()],
     )?;
     loader.set_use_isolating(false);
     Ok(loader)
@@ -210,7 +213,7 @@ pub(crate) fn load_all() -> Result<HashMap<LanguageIdentifier, FluentLanguageLoa
         .map(|lang| {
             let loader = fluent_language_loader!();
             loader
-                .load_languages(&Translations, &[&lang])
+                .load_languages(&Translations, &[lang.clone()])
                 .map(|_| (lang, loader))
         })
         .collect()
