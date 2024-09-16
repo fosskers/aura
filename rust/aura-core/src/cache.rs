@@ -274,6 +274,7 @@ pub fn is_package(path: &Path) -> bool {
                 ".pkg.tar.Z",
                 ".pkg.tar.lz4",
                 ".pkg.tar.lz",
+                ".pkg.tar",
             ]
             .iter()
             .any(|ext| p.ends_with(ext))
