@@ -264,7 +264,19 @@ pub fn missing_tarballs<'a>(
 pub fn is_package(path: &Path) -> bool {
     path.to_str()
         .map(|p| {
-            p.ends_with(".pkg.tar.zst") || p.ends_with(".pkg.tar.xz") || p.ends_with(".pkg.tar")
+            [
+                ".pkg.tar.gz",
+                ".pkg.tar.bz2",
+                ".pkg.tar.xz",
+                ".pkg.tar.zst",
+                ".pkg.tar.lrz",
+                ".pkg.tar.lzo",
+                ".pkg.tar.Z",
+                ".pkg.tar.lz4",
+                ".pkg.tar.lz",
+            ]
+            .iter()
+            .any(|ext| p.ends_with(ext))
         })
         .unwrap_or(false)
 }
