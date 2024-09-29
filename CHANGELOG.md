@@ -5,6 +5,7 @@
 #### Fixed
 
 - Removed the check for `sudo` as it is causing more problems than it sought to fix.
+- A humourous oversight involving simultaneous usage of `-Aa` and `--asdeps`.
 
 ## 4.0.7 (2024-09-15)
 

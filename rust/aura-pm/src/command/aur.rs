@@ -445,7 +445,7 @@ where
         // `base-devel` is added automatically to the build if the user didn't
         // have it installed. It would be counter-intuitive to have it removed
         // again, so we avoid that here.
-        diff.retain(|p| **p != "base-devel");
+        diff.retain(|p| **p != "base-devel" && pkgs.contains(**p).not());
         if diff.is_empty().not() {
             crate::pacman::sudo_pacman(env, "-Rsu", NOTHING, diff).map_err(Error::Pacman)?;
         }
