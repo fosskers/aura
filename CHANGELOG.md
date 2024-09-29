@@ -1,5 +1,11 @@
 # Aura Changelog
 
+## Unreleased
+
+#### Fixed
+
+- Removed the check for `sudo` as it is causing more problems than it sought to fix.
+
 ## 4.0.7 (2024-09-15)
 
 Pacman 7 has been released. See [here][pac7] for more information.

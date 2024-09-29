@@ -134,11 +134,6 @@ pub(crate) fn is_root_user() -> bool {
     matches!(karen::check(), RunningAs::Root)
 }
 
-/// Is Aura being run undo `sudo`? It shouldn't be!
-pub(crate) fn is_sudo_user() -> bool {
-    matches!(karen::check(), RunningAs::Root) && std::env::var("SUDO_USER").is_ok()
-}
-
 /// An [`Iterator`] that knows if the current iteration step is the last one.
 /// Utilizes [`Peekable`] under the hood, so note that this forces the iteration
 /// of the next element.
