@@ -265,16 +265,16 @@ pub fn is_package(path: &Path) -> bool {
     path.to_str()
         .map(|p| {
             [
+                ".pkg.tar.zst",
+                ".pkg.tar.xz",
+                ".pkg.tar",
+                ".pkg.tar.lz4",
+                ".pkg.tar.lz",
                 ".pkg.tar.gz",
                 ".pkg.tar.bz2",
-                ".pkg.tar.xz",
-                ".pkg.tar.zst",
                 ".pkg.tar.lrz",
                 ".pkg.tar.lzo",
                 ".pkg.tar.Z",
-                ".pkg.tar.lz4",
-                ".pkg.tar.lz",
-                ".pkg.tar",
             ]
             .iter()
             .any(|ext| p.ends_with(ext))
