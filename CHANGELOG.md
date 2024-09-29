@@ -1,6 +1,10 @@
 # Aura Changelog
 
-## Unreleased
+## 4.0.8 (2024-09-29)
+
+#### Added
+
+- Support for all compression formats listed in `makepkg.conf`.
 
 #### Fixed
 
