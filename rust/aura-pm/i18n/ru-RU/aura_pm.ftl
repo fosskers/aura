@@ -1,4 +1,4 @@
-language-name = Russian
+language-name = Русский
 
 # AUR Packages (-A)
 A-install-deps = Определение зависимостей...
