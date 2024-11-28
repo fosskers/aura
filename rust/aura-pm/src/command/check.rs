@@ -452,20 +452,22 @@ fn pacnews(fll: &FluentLanguageLoader) {
             for (i, (path, days)) in bads.into_iter().enumerate() {
                 let arrow = if i + 1 == len { "└─" } else { "├─" };
 
-                println!(
-                    "      {} {}",
-                    arrow,
-                    fl!(
-                        fll,
-                        "check-pconf-pacnew-old",
-                        path = path.utf8().cyan().to_string(),
-                        days = days.to_string().red().to_string(),
-                    ),
+                let formatted_message = fl!(
+                    fll,
+                    "check-pconf-pacnew-old",
+                    path = path.utf8().cyan().to_string(),
+                    days = days
                 );
+
+                let colored_days = days.to_string().red().to_string();
+                let colored_message = formatted_message.replace(&days.to_string(), &colored_days);
+
+                println!("      {} {}", arrow, colored_message);
             }
         }
     }
 }
+
 
 /// Attempt to produce a list of paths for which the current in-use config file
 /// is older than its associated `.pacnew`. For each such path, also include how
