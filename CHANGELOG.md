@@ -1,5 +1,11 @@
 # Aura Changelog
 
+## Unreleased
+
+#### Added
+
+- Improved Russian localisations.
+
 ## 4.0.8 (2024-09-29)
 
 #### Added

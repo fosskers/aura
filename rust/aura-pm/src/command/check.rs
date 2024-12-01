@@ -468,7 +468,6 @@ fn pacnews(fll: &FluentLanguageLoader) {
     }
 }
 
-
 /// Attempt to produce a list of paths for which the current in-use config file
 /// is older than its associated `.pacnew`. For each such path, also include how
 /// many days out-of-date it is.

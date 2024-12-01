@@ -36,7 +36,10 @@ pub(crate) const TRANSLATORS: &[(&str, &str)] = &[
         "Henry Kupty / Thiago Perrotta / Wagner Amaral",
     ),
     ("Romanian", "90 / benone"),
-    ("Russian", "Kyrylo Silin / Alexey Kotlyarov"),
+    (
+        "Russian",
+        "Kyrylo Silin / Alexey Kotlyarov / SuperSuslik312",
+    ),
     ("Serbian", "Filip Brcic"),
     ("Spanish", "Alejandro Gómez / Sergio Conde / Max Ferrer"),
     ("Swedish", "Fredrik Haikarainen / Daniel Beecham"),

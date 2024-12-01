@@ -355,7 +355,7 @@ Aura has been translated by these generous people:
 | Polish     | Chris Warrick, Michał Kurek                     |
 | Portuguese | Henry Kupty, Thiago Perrotta, and Wagner Amaral |
 | Romanian   | "90", "benone"                                  |
-| Russian    | Kyrylo Silin, Alexey Kotlyarov                  |
+| Russian    | Kyrylo Silin, Alexey Kotlyarov, SuperSuslik312  |
 | Serbian    | Filip Brcic                                     |
 | Spanish    | Alejandro Gómez, Sergio Conde and Max Ferrer    |
 | Swedish    | Fredrik Haikarainen and Daniel Beecham          |
