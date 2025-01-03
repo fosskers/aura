@@ -29,6 +29,7 @@ pub(crate) const TRANSLATORS: &[(&str, &str)] = &[
     ("Italian", "Bob Valantin / Cristian Tentella"),
     ("Japanese", "Onoue Takuro / Colin Woodbury"),
     ("Korean", "\"Nioden\""),
+    ("Latin", "\"semilin\""),
     ("Norwegian", "\"chinatsun\""),
     ("Polish", "Chris Warrick / Michał Kurek"),
     (
@@ -84,6 +85,7 @@ where
         ("ko", _) => Some(aura_pm::KOREAN),
         ("hi", _) => Some(aura_pm::HINDI),
         ("bn", _) => Some(aura_pm::BENGALI),
+        ("la", _) => Some(aura_pm::LATIN),
         _ => None,
     }
 }

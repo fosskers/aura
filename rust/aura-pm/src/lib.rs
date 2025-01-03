@@ -48,3 +48,4 @@ pub const VIETNAMESE: LanguageIdentifier = langid!("vi-VN");
 pub const CZECH: LanguageIdentifier = langid!("cs-CZ");
 pub const KOREAN: LanguageIdentifier = langid!("ko-KR");
 pub const HINDI: LanguageIdentifier = langid!("hi-IN");
+pub const LATIN: LanguageIdentifier = langid!("la-VA");

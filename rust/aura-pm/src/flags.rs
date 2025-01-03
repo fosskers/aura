@@ -58,6 +58,8 @@ pub const AURA_GLOBALS: &[&str] = &[
     "--हिंदी",
     "--bengali",
     "--bangla",
+    "--latin",
+    "--latinus",
 ];
 
 /// Commandline arguments to the Aura executable.
@@ -354,6 +356,17 @@ pub struct Args {
         display_order = 10
     )]
     pub bengali: bool,
+    /// Output in Latin (aliases: latinus).
+    #[clap(
+        group = "language",
+        long,
+        global = true,
+        aliases = ["latinus"],
+        hide_short_help = true,
+        hide_long_help = true,
+        display_order = 10
+    )]
+    pub latin: bool,
 
     // --- Other Aura Options --- //
     /// Minimum level of Aura log messages to display.
@@ -398,6 +411,7 @@ impl Args {
             _ if self.korean => Some(crate::KOREAN),
             _ if self.hindi => Some(crate::HINDI),
             _ if self.bengali => Some(crate::BENGALI),
+            _ if self.latin => Some(crate::LATIN),
             _ => None,
         }
     }
