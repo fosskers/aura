@@ -33,6 +33,7 @@
     :kr:
     :india:
     :bangladesh:
+    🇲🇪
   </div>
   <br>
   
@@ -351,6 +352,7 @@ Aura has been translated by these generous people:
 | Italian    | Bob Valantin and Cristian Tentella              |
 | Japanese   | Colin Woodbury and Onoue Takuro                 |
 | Korean     | "Nioden"                                        |
+| Latin      | "semilin"                                       |
 | Norwegian  | "chinatsun"                                     |
 | Polish     | Chris Warrick, Michał Kurek                     |
 | Portuguese | Henry Kupty, Thiago Perrotta, and Wagner Amaral |
