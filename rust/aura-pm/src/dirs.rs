@@ -49,10 +49,8 @@ pub(crate) fn xdg_config() -> Result<PathBuf, Error> {
 pub(crate) fn aura_config() -> Result<PathBuf, Error> {
     let xdg = xdg_config()?;
     let dir = xdg.join("aura");
-
-    if dir.is_dir().not() {
-        std::fs::create_dir_all(&dir).map_err(|e| Error::Mkdir(dir.clone(), e))?;
-    }
+    
+    make_dir(&dir)?;
 
     Ok(dir.join("config.toml"))
 }
@@ -72,74 +70,48 @@ fn xdg_cache() -> Result<PathBuf, Error> {
 
 /// The full path to the Aura cache.
 pub(crate) fn aura_xdg_cache() -> Result<PathBuf, Error> {
-    let cache = xdg_cache()?.join("aura");
-    Ok(cache)
+    Ok(xdg_cache()?.join("aura"))
 }
 
 /// The full path to the package snapshot directory.
 ///
-/// Creates the directory if it doesn't exist.
 pub(crate) fn snapshot() -> Result<PathBuf, Error> {
-    let path = aura_xdg_cache()?.join("snapshots");
-
-    if path.is_dir().not() {
-        std::fs::create_dir_all(&path).map_err(|e| Error::Mkdir(path.clone(), e))?;
-    }
-
-    Ok(path)
+    Ok(aura_xdg_cache()?.join("snapshots"))
 }
 
 /// The full path to the directory of AUR package `git` clones.
 ///
-/// Creates the directory if it doesn't exist.
 pub(crate) fn clones() -> Result<PathBuf, Error> {
     let path = std::env::var("AURDEST")
         .map(PathBuf::from)
         .or_else(|_| aura_xdg_cache().map(|p| p.join("packages")))?;
-
-    if path.is_dir().not() {
-        std::fs::create_dir_all(&path).map_err(|e| Error::Mkdir(path.clone(), e))?;
-    }
 
     Ok(path)
 }
 
 /// The full path to the build directory.
 ///
-/// Creates the directory if it doesn't exist.
 pub(crate) fn builds() -> Result<PathBuf, Error> {
-    let path = aura_xdg_cache()?.join("builds");
-
-    if path.is_dir().not() {
-        std::fs::create_dir_all(&path).map_err(|e| Error::Mkdir(path.clone(), e))?;
-    }
-
-    Ok(path)
+    Ok(aura_xdg_cache()?.join("builds"))
 }
 
 /// The full path to the Aura-specific tarball cache.
 ///
-/// Creates the directory if it doesn't exist.
 pub(crate) fn tarballs() -> Result<PathBuf, Error> {
-    let path = aura_xdg_cache()?.join("cache");
-
-    if path.is_dir().not() {
-        std::fs::create_dir_all(&path).map_err(|e| Error::Mkdir(path.clone(), e))?;
-    }
-
-    Ok(path)
+    Ok(aura_xdg_cache()?.join("cache"))
 }
 
 /// The full path to the directory of git hashes that indicate the last time an
 /// AUR package was built and installed.
 ///
-/// Creates the directory if it doesn't exist.
 pub(crate) fn hashes() -> Result<PathBuf, Error> {
-    let path = aura_xdg_cache()?.join("hashes");
+    Ok(aura_xdg_cache()?.join("hashes"))
+}
 
+/// Create a directory if it doesn't exist.
+pub(crate) fn make_dir(path: &PathBuf) -> Result<(), Error> {
     if path.is_dir().not() {
         std::fs::create_dir_all(&path).map_err(|e| Error::Mkdir(path.clone(), e))?;
     }
-
-    Ok(path)
+    Ok(())
 }

@@ -132,6 +132,7 @@ fn env(args: &Args) -> Result<Env, Error> {
     let mut env = crate::env::Env::try_new()?;
     env.reconcile_cli(args);
     env.validate()?;
+    env.mk_dirs()?;
     Ok(env)
 }
 
