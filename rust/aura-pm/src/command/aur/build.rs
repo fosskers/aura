@@ -465,6 +465,10 @@ fn makepkg(env: &Env, within: &Path) -> Result<Vec<PkgPath>, Error> {
         cmd.arg("--skippgpcheck");
     }
 
+    if env.aur.clean {
+        cmd.arg("-c");
+    }
+
     debug!("Running makepkg within: {}", within.display());
 
     cmd.current_dir(within)
