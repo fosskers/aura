@@ -7,6 +7,10 @@
 - Improved Russian localisations.
 - Added Latin localisations.
 
+#### Fixed
+
+- Ensure that all necessary Aura directories are created upon startup.
+
 ## 4.0.8 (2024-09-29)
 
 #### Added

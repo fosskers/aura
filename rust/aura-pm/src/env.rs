@@ -213,14 +213,13 @@ impl Env {
     pub(crate) fn lock_file(&self) -> PathBuf {
         Path::new(&self.pacman.db_path).join("db.lck")
     }
-    
-    
+
     // Creates all directories Aura needs to function.
-    pub(crate) fn mk_dirs(&self) -> Result<(), Error> {
-        self.aur.mk_dirs().map_err(Error::Dirs)?;
-        self.backups.mk_dirs().map_err(Error::Dirs)?;
+    pub(crate) fn ensure_dirs(&self) -> Result<(), Error> {
+        self.aur.ensure_dirs().map_err(Error::Dirs)?;
+        self.backups.ensure_dirs().map_err(Error::Dirs)?;
         Ok(())
-    } 
+    }
 }
 
 #[derive(Debug, Deserialize)]
@@ -404,14 +403,14 @@ impl Aur {
 
         Ok(a)
     }
-    
-        pub(crate) fn mk_dirs(&self) -> Result<(), dirs::Error> {
-            dirs::make_dir(&self.build)?;
-            dirs::make_dir(&self.cache)?;
-            dirs::make_dir(&self.clones)?;
-            dirs::make_dir(&self.hashes)?;
-            Ok(())
-        }
+
+    pub(crate) fn ensure_dirs(&self) -> Result<(), dirs::Error> {
+        dirs::ensure_dir(&self.build)?;
+        dirs::ensure_dir(&self.cache)?;
+        dirs::ensure_dir(&self.clones)?;
+        dirs::ensure_dir(&self.hashes)?;
+        Ok(())
+    }
 
     /// Flags set on the command line should override config settings and other
     /// defaults.
@@ -546,9 +545,9 @@ impl Backups {
 
         Ok(g)
     }
-    
-    pub(crate) fn mk_dirs(&self) -> Result<(), dirs::Error> {
-        dirs::make_dir(&self.snapshots)?;
+
+    pub(crate) fn ensure_dirs(&self) -> Result<(), dirs::Error> {
+        dirs::ensure_dir(&self.snapshots)?;
         Ok(())
     }
 }
