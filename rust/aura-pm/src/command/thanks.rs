@@ -21,6 +21,6 @@ pub(crate) fn thanks(fll: &FluentLanguageLoader) {
         .unwrap_or(0);
 
     for (lang, guys) in TRANSLATORS {
-        println!("{lang:w$} : {guys}", w = longest);
+        println!("{lang:longest$} : {guys}");
     }
 }

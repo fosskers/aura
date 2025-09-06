@@ -94,7 +94,7 @@ fn main() -> ExitCode {
             match localization::load(Some(ENGLISH)) {
                 Err(e1) => {
                     aln!("Aura utterly failed to establish a runtime environment.".red());
-                    println!("\n  {}", e1);
+                    println!("\n  {e1}");
                 }
                 Ok(fll) => {
                     aln!(e.localise(&fll).red());
@@ -110,7 +110,7 @@ fn main() -> ExitCode {
             match localization::load(Some(env.general.language.clone())) {
                 Err(e) => {
                     aln!("Runtime environment loaded, but failed to localise Aura!".red());
-                    println!("\n  {}", e);
+                    println!("\n  {e}");
                     ExitCode::FAILURE
                 }
                 Ok(fll) => match work(args, env, &fll) {

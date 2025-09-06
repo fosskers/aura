@@ -229,7 +229,7 @@ pub(crate) fn info(
         };
         let is_in = if let Ok(pkg) = db.pkg(ci.name.as_str()) {
             if ci.version == pkg.version().as_str() {
-                format!("[{}]", inst).cyan().bold()
+                format!("[{inst}]").cyan().bold()
             } else {
                 format!("[{}: {}]", inst, pkg.version()).yellow().bold()
             }

@@ -5,6 +5,7 @@
 #### Added
 
 - Improved Russian localisations.
+- Added Latin localisations.
 
 ## 4.0.8 (2024-09-29)
 

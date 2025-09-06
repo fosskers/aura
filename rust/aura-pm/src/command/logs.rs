@@ -90,7 +90,7 @@ fn info_work(
 
         crate::utils::info(&mut w, fll.current_language(), &pairs)?;
         for r in e.recent {
-            writeln!(w, "{}", r)?;
+            writeln!(w, "{r}")?;
         }
         writeln!(w)?;
     }
@@ -119,10 +119,10 @@ fn view_work(path: &Path, before: Option<Date>, after: Option<Date>) -> Result<(
             .parse::<Date>()
         {
             match (&after, &before) {
-                (Some(a), Some(b)) if date.0 >= a.0 && date.0 < b.0 => writeln!(out, "{}", line)?,
-                (Some(a), None) if date.0 >= a.0 => writeln!(out, "{}", line)?,
-                (None, Some(b)) if date.0 < b.0 => writeln!(out, "{}", line)?,
-                (None, None) => writeln!(out, "{}", line)?,
+                (Some(a), Some(b)) if date.0 >= a.0 && date.0 < b.0 => writeln!(out, "{line}")?,
+                (Some(a), None) if date.0 >= a.0 => writeln!(out, "{line}")?,
+                (None, Some(b)) if date.0 < b.0 => writeln!(out, "{line}")?,
+                (None, None) => writeln!(out, "{line}")?,
                 (_, _) => {}
             }
         }

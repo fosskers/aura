@@ -56,7 +56,7 @@ pub(crate) fn graph(
     let graph = deps::PkgGraph::by_deps(&db, limit, optional, &foreigns, &pkgs);
 
     if raw {
-        println!("{}", graph);
+        println!("{graph}");
     } else {
         render(graph, &packages, open)?;
     }
@@ -82,7 +82,7 @@ pub(crate) fn reverse(
     let graph = deps::PkgGraph::by_parents(&db, limit, optional, &foreigns, &pkgs);
 
     if raw {
-        println!("{}", graph);
+        println!("{graph}");
     } else {
         render(graph, &packages, open)?;
     }

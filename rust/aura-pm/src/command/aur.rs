@@ -306,7 +306,7 @@ fn render_search(
             };
 
             // TODO Search term highlighting
-            println!("{}{} {} ({} | {}) {}", rep, n, ver, vot, pop, ins);
+            println!("{rep}{n} {ver} ({vot} | {pop}) {ins}");
             println!("    {}", p.description.unwrap_or_default());
         }
     }
@@ -323,7 +323,7 @@ pub(crate) fn pkgbuild(pkg: &str, clone_d: &Path) -> Result<(), Error> {
 
     file.lines()
         .map_while(Result::ok)
-        .try_for_each(|line| writeln!(out, "{}", line))
+        .try_for_each(|line| writeln!(out, "{line}"))
         .map_err(|_| Error::Stdout)?;
 
     Ok(())
@@ -341,7 +341,7 @@ pub(crate) fn open(package: &str) -> Result<(), Error> {
 
 /// A package's URL on the AUR.
 fn package_url(package: &str) -> String {
-    format!("{}{}", AUR_PKG_URL, package)
+    format!("{AUR_PKG_URL}{package}")
 }
 
 fn package_date(epoch: u64) -> Result<ColoredString, Error> {
@@ -353,7 +353,7 @@ fn package_date(epoch: u64) -> Result<ColoredString, Error> {
     let date = OffsetDateTime::from_unix_timestamp(epoch as i64)
         .map_err(Error::DateConv)?
         .date();
-    Ok(format!("{}", date).normal())
+    Ok(format!("{date}").normal())
 }
 
 /// Clone the AUR repository of given packages.
@@ -584,7 +584,7 @@ fn update_hash(hashes: &Path, clone: &Path) -> Result<(), Error> {
     let hash = aura_core::git::hash(clone).map_err(Error::Git)?;
     let base = clone
         .components()
-        .last()
+        .next_back()
         .map(|c| c.as_os_str())
         .ok_or_else(|| Error::PathComponent(clone.to_path_buf()))?;
 

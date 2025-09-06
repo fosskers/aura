@@ -545,7 +545,7 @@ fn copy_to_cache(cache: &Path, tarballs: Vec<PkgPath>) -> Result<Vec<PkgPath>, E
                     let target = cache.join(file);
                     move_tarball(&path, &target).and_then(|_| {
                         PkgPath::new(target.clone())
-                            .ok_or_else(|| Error::FilenameExtraction(target))
+                            .ok_or(Error::FilenameExtraction(target))
                     })
                 })
         })

@@ -143,8 +143,8 @@ pub(crate) fn restore(env: &Env, fll: &FluentLanguageLoader, alpm: &Alpm) -> Res
     for (i, ss) in shots.iter().enumerate() {
         let form = format_description!("[year]-[month]-[day] [hour]-[minute]-[second]");
         let time = ss.time.format(form).map_err(Error::TimeFormat)?;
-        let pinned = ss.pinned.then(|| "[pinned]".cyan()).unwrap_or_default();
-        println!(" {:w$}) {} {}", i, time, pinned, w = digits);
+        let pinned = if ss.pinned { "[pinned]".cyan() } else { Default::default() };
+        println!(" {i:digits$}) {time} {pinned}");
     }
 
     let index = crate::utils::select(">>> ", shots.len() - 1).map_err(Error::Readline)?;

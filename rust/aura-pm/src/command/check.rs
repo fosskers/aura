@@ -93,7 +93,7 @@ fn java(fll: &FluentLanguageLoader) {
             println!("  [{}] {}", WARN.yellow(), msg);
             let pkg = "jdk-openjdk".cyan().to_string();
             let msg = fl!(fll, "check-env-java-bin-fix", pkg = pkg);
-            println!("      └─ {}", msg);
+            println!("      └─ {msg}");
         }
         Ok(_) => {
             let good = crate::utils::cmd_lines("archlinux-java", &["status"])
@@ -105,7 +105,7 @@ fn java(fll: &FluentLanguageLoader) {
             if !good {
                 let cmd = "archlinux-java --help".cyan().to_string();
                 let msg = fl!(fll, "check-env-java-set-fix", cmd = cmd);
-                println!("      └─ {}", msg);
+                println!("      └─ {msg}");
             }
         }
     }
@@ -118,7 +118,7 @@ fn lang(fll: &FluentLanguageLoader) {
             let msg = fl!(fll, "check-env-lang", cmd = cmd, lang = "???");
             println!("  [{}] {}", BAD.red(), msg);
             let msg = fl!(fll, "check-env-lang-fix2");
-            println!("      └─ {}", msg);
+            println!("      └─ {msg}");
         }
         Ok(lang) => {
             let good = crate::utils::cmd_lines("locale", &["-a"])
@@ -128,13 +128,13 @@ fn lang(fll: &FluentLanguageLoader) {
             let symb = if good { GOOD.green() } else { BAD.red() };
             let cmd = "locale -a".cyan().to_string();
             let msg = fl!(fll, "check-env-lang", cmd = cmd, lang = lang.clone());
-            println!("  [{}] {}", symb, msg);
+            println!("  [{symb}] {msg}");
 
             if !good {
                 let file = "/etc/locale.gen".cyan().to_string();
                 let lnge = lang.cyan().to_string();
                 let msg = fl!(fll, "check-env-lang-fix", file = file, lang = lnge);
-                println!("      └─ {}", msg);
+                println!("      └─ {msg}");
             }
 
             aura_knows_lang(fll, &lang);
@@ -205,7 +205,7 @@ fn old_aura_dirs(fll: &FluentLanguageLoader) {
             let old = "/var/cache/aura".bold().yellow().to_string();
             let new = cache.display().to_string().bold().cyan().to_string();
             let msg = fl!(fll, "common-replace", old = old, new = new);
-            println!("      └─ {}", msg);
+            println!("      └─ {msg}");
         }
     }
 }
@@ -227,7 +227,7 @@ fn old_aura_conf(fll: &FluentLanguageLoader) {
                 let old = file.display().to_string().bold().yellow().to_string();
                 let msg = fl!(fll, "common-replace", old = old, new = new.as_str());
                 let arrow = if i + 1 == len { "└─" } else { "├─" };
-                println!("      {} {}", arrow, msg);
+                println!("      {arrow} {msg}");
             }
         }
     }
@@ -250,7 +250,7 @@ fn parsable_aura_toml(fll: &FluentLanguageLoader) {
             .cyan()
             .to_string();
         let msg = fl!(fll, "check-aconf-aura-exists-fix", cmd = cmd);
-        println!("      └─ {}", msg);
+        println!("      └─ {msg}");
     }
 }
 
@@ -267,7 +267,7 @@ fn packager_set(fll: &FluentLanguageLoader, env: &Env, path: &str) {
     if !good {
         let cmd = "PACKAGER=\"You <you@foo.com>\"".cyan().to_string();
         let msg = fl!(fll, "check-mconf-packager-fix", cmd = cmd, path = path);
-        println!("      └─ {}", msg);
+        println!("      └─ {msg}");
     }
 }
 
@@ -283,7 +283,7 @@ fn parallel_downloads(fll: &FluentLanguageLoader, c: &pacmanconf::Config) {
             .cyan()
             .to_string();
         let msg = fl!(fll, "check-pconf-par-fix", setting = cmd, set = fix);
-        println!("      └─ {}", msg);
+        println!("      └─ {msg}");
     }
 }
 
@@ -300,7 +300,7 @@ fn duplicate_ignores(fll: &FluentLanguageLoader, c: &pacmanconf::Config, a: &Aur
         ix.sort_unstable();
         let ps = ix.join(", ");
         let msg = fl!(fll, "check-pconf-ignores-fix", pkgs = ps);
-        println!("      └─ {}", msg);
+        println!("      └─ {msg}");
     }
 }
 
@@ -327,7 +327,7 @@ fn usable_snapshots(fll: &FluentLanguageLoader, s_path: &Path, t_path: &[&Path])
     if !good {
         let cmd = "aura -Bc".bold().cyan().to_string();
         let msg = fl!(fll, "check-snapshot-usable-fix", command = cmd);
-        println!("      └─ {}", msg);
+        println!("      └─ {msg}");
     }
 }
 
@@ -380,7 +380,7 @@ fn valid_tarballs(fll: &FluentLanguageLoader, pool: Pool<AlpmManager>, caches: &
     if !good {
         let cmd = "aura -Ct".bold().cyan().to_string();
         let msg = fl!(fll, "check-cache-tarballs-fix", command = cmd);
-        println!("      └─ {}", msg);
+        println!("      └─ {msg}");
     }
 }
 
@@ -401,7 +401,7 @@ fn official_packages_have_tarballs(fll: &FluentLanguageLoader, alpm: &Alpm, cach
     if is_bad {
         let cmd = "aura -Cy".bold().cyan().to_string();
         let msg = fl!(fll, "check-cache-missing-fix", command = cmd);
-        println!("      └─ {}", msg);
+        println!("      └─ {msg}");
     }
 }
 
@@ -422,7 +422,7 @@ fn foreign_packages_have_tarballs(fll: &FluentLanguageLoader, alpm: &Alpm, cache
     if is_bad {
         let cmd = "aura -Cm".bold().cyan().to_string();
         let msg = fl!(fll, "check-cache-missing-for-fix", cmd = cmd);
-        println!("      └─ {}", msg);
+        println!("      └─ {msg}");
     }
 }
 
@@ -462,7 +462,7 @@ fn pacnews(fll: &FluentLanguageLoader) {
                 let colored_days = days.to_string().red().to_string();
                 let colored_message = formatted_message.replace(&days.to_string(), &colored_days);
 
-                println!("      {} {}", arrow, colored_message);
+                println!("      {arrow} {colored_message}");
             }
         }
     }
@@ -561,7 +561,7 @@ fn old_packages(fll: &FluentLanguageLoader, alpm: &Alpm) {
 
             let msg = fl!(fll, "check-pkgs-old-warn", pkg = pkg, days = day);
             let arrow = if i + 1 == len { "└─" } else { "├─" };
-            println!("      {} {}", arrow, msg);
+            println!("      {arrow} {msg}");
         }
     }
 }
@@ -587,7 +587,7 @@ fn empty_directories(fll: &FluentLanguageLoader, env: &Env) {
 
         if empties.is_empty().not() {
             let msg = fl!(fll, "check-pkgs-empty-fix");
-            println!("      └─ {}", msg);
+            println!("      └─ {msg}");
 
             for empty in empties {
                 println!("         - {}", empty.display());

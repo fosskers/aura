@@ -43,7 +43,7 @@ impl Localised for Error {
 
 /// The raw contents of a runtime `Env`.
 pub(crate) fn general(env: &Env) {
-    println!("{:#?}", env);
+    println!("{env:#?}");
 }
 
 /// Output your current, full Aura config as legal TOML.

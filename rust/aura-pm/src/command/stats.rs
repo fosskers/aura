@@ -69,11 +69,11 @@ pub(crate) fn localization() -> Result<(), Error> {
     for (lang, (n, c)) in sorted {
         let perc = 100.0 * c as f64 / max as f64;
         let l = if perc < 50.0 {
-            format!("{}", lang).red()
+            format!("{lang}").red()
         } else if perc < 100.0 {
-            format!("{}", lang).yellow()
+            format!("{lang}").yellow()
         } else {
-            format!("{}", lang).green()
+            format!("{lang}").green()
         };
         let pad = long - visual_len(&lang, &n);
         println!(
@@ -185,6 +185,6 @@ pub(crate) fn groups(alpm: &Alpm) {
     v.sort_unstable();
 
     for p in v {
-        println!("{}", p);
+        println!("{p}");
     }
 }
