@@ -171,7 +171,10 @@ fn build_one(
         .filter(|file| (file.contains("https://") || file.contains("http://")).not())
         .map(|s| s.as_str());
 
-    let install_files = all_install_files(&clone);
+    let mut install_files = all_install_files(&clone);
+    if let Some(ref install_file) = info.pkg.install {
+        install_files.push(PathBuf::from(install_file))
+    }
 
     std::iter::once("PKGBUILD")
         .chain(install_files.iter().filter_map(|pb| pb.to_str()))
