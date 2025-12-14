@@ -207,6 +207,6 @@ pub(crate) fn cmd_lines(cmd: &str, args: &[&str]) -> Option<NEVec<String>> {
                 .map(|line| line.trim().to_string())
                 .collect::<Vec<_>>();
 
-            NEVec::from_vec(v)
+            NEVec::try_from_vec(v)
         })
 }

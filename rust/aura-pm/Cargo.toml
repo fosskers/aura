@@ -1,6 +1,6 @@
 [package]
 name = "aura-pm"
-version = "4.0.8"
+version = "4.0.9"
 authors = ["Colin Woodbury <colin@fosskers.ca>"]
 edition = "2021"
 description = "Install and manage Arch Linux packages."
@@ -17,19 +17,25 @@ path = "src/main.rs"
 aura-core = { version = "0.8.5", path = "../aura-core" }
 r2d2-alpm = { version = "0.2.1", path = "../r2d2-alpm" }
 
-alpm = "4.0"
+alpm = "5.0"
 applying = "1.0.0"
 basic-toml = "0.1"
-clap = { version = "4.5", default-features = false, features = ["std", "derive", "help", "usage", "error-context"] }
-colored = "2.0"
+clap = { version = "4.5", default-features = false, features = [
+  "std",
+  "derive",
+  "help",
+  "usage",
+  "error-context",
+] }
+colored = "3.0"
 curl = "0.4"
-i18n-embed = { version = "0.15", features = ["fluent-system"] }
-i18n-embed-fl = "0.9"
-itertools = "0.13"
+i18n-embed = { version = "0.16", features = ["fluent-system"] }
+i18n-embed-fl = "0.10.0"
+itertools = "0.14"
 karen = "0.1"
 linya = "0.3.1"
 log = "0.4"
-nonempty-collections = "0.2.5"
+nonempty-collections = "1.2.1"
 num_cpus = "1.16"
 pacmanconf = "3.0"
 r2d2 = "0.8"
@@ -38,12 +44,12 @@ rust-embed = "8.0"
 serde = "1.0"
 serde_json = "1.0"
 simplelog = "0.12"
-srcinfo = "1.1"
+srcinfo = "1.3.1"
 time = { version = "0.3", features = ["parsing"] }
 ubyte = "0.10"
 unic-langid = { version = "0.9", features = ["macros", "serde"] }
-validated = { version = "0.4", features = ["rayon"] }
-which = "6.0"
+validated = { version = "1.0", features = ["rayon"] }
+which = "8.0"
 whoami = "1.5"
 
 [features]
@@ -53,5 +59,5 @@ git = ["alpm/git"]
 lto = true
 panic = "abort"
 strip = true
-opt-level = "z"  # Reduces final stripped size by ~20%.
+opt-level = "z"   # Reduces final stripped size by ~20%.
 codegen-units = 1

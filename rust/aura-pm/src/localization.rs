@@ -151,7 +151,7 @@ where
                 let ne = e.inner_errors();
 
                 if ne.len() == NonZeroUsize::MIN {
-                    ne.head.localise(fll)
+                    ne.first().localise(fll)
                 } else {
                     let iter = ne.iter().map(|e| format!(" - {}", e.localise(fll)));
 

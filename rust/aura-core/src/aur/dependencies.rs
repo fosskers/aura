@@ -57,7 +57,11 @@ impl<E> Error<E> {
     /// A flattened list of all inner error values.
     pub fn inner_errors(&self) -> NEVec<&Self> {
         match self {
-            Error::Resolutions(bx) => bx.as_ref().iter().flat_map(|e| e.inner_errors()).collect(),
+            Error::Resolutions(bx) => bx
+                .as_ref()
+                .nonempty_iter()
+                .flat_map(|e| e.inner_errors())
+                .collect(),
             otherwise => nev![otherwise],
         }
     }
@@ -651,7 +655,7 @@ impl<'a> Interdeps<'a> {
             None
         } else {
             chain.insert(head);
-            NESet::from_set(chain)
+            NESet::try_from_set(chain)
         }
     }
 
