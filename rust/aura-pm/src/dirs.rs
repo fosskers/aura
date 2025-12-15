@@ -6,7 +6,7 @@ use crate::utils::PathStr;
 use i18n_embed_fl::fl;
 use log::error;
 use std::ops::Not;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 #[derive(Debug)]
 pub enum Error {
@@ -104,9 +104,9 @@ pub(crate) fn hashes() -> Result<PathBuf, Error> {
 }
 
 /// Create a directory if it doesn't exist.
-pub(crate) fn ensure_dir(path: &PathBuf) -> Result<(), Error> {
+pub(crate) fn ensure_dir(path: &Path) -> Result<(), Error> {
     if path.is_dir().not() {
-        std::fs::create_dir_all(&path).map_err(|e| Error::Mkdir(path.clone(), e))?;
+        std::fs::create_dir_all(path).map_err(|e| Error::Mkdir(path.to_path_buf(), e))?;
     }
 
     Ok(())

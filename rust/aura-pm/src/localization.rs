@@ -8,7 +8,6 @@ use i18n_embed::fluent::FluentLanguageLoader;
 use i18n_embed::I18nEmbedError;
 use i18n_embed::LanguageLoader;
 use i18n_embed_fl::fl;
-use nonempty_collections::*;
 use rust_embed::RustEmbed;
 use std::collections::HashMap;
 use std::num::NonZeroUsize;
@@ -218,7 +217,7 @@ pub(crate) fn load_all() -> Result<HashMap<LanguageIdentifier, FluentLanguageLoa
         .map(|lang| {
             let loader = fluent_language_loader!();
             loader
-                .load_languages(&Translations, &[lang.clone()])
+                .load_languages(&Translations, std::slice::from_ref(&lang))
                 .map(|_| (lang, loader))
         })
         .collect()

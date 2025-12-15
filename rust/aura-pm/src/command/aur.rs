@@ -555,10 +555,12 @@ fn install_work(
             // binary package could slip into an early installation layer. This
             // needs to be confirmed, though.
             //
-            // 2028-08-07 This happened to me yesterday.
-            let mut flags = (!done || (matches!(mode, Mode::Install) && env.aur.asdeps))
-                .then(|| vec!["--asdeps"])
-                .unwrap_or_default();
+            // 2024-08-07 This happened to me yesterday.
+            let mut flags = if !done || (matches!(mode, Mode::Install) && env.aur.asdeps) {
+                vec!["--asdeps"]
+            } else {
+                Vec::default()
+            };
 
             if env.general.noconfirm {
                 flags.push("--noconfirm");
