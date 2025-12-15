@@ -1,5 +1,11 @@
 # r2d2-alpm
 
+## 0.2.2 (2025-12-16)
+
+#### Fixed
+
+- Support for libalpm 16.
+
 ## 0.2.1 (2024-09-15)
 
 #### Fixed
