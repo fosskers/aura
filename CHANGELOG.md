@@ -1,6 +1,6 @@
 # Aura Changelog
 
-## Unreleased
+## 4.1.0
 
 #### Added
 
@@ -9,6 +9,7 @@
 
 #### Fixed
 
+- Support for libalpm 16.
 - Ensure that all necessary Aura directories are created upon startup.
 
 ## 4.0.8 (2024-09-29)
