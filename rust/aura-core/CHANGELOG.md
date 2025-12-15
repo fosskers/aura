@@ -1,5 +1,11 @@
 # aura-core
 
+## 0.8.4 (2025-12-16)
+
+#### Fixed
+
+- Support for libalpm 16.
+
 ## 0.8.3 (2024-08-16)
 
 #### Fixed

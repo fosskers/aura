@@ -1,6 +1,6 @@
 [package]
 name = "aura-pm"
-version = "4.0.9"
+version = "4.1.0"
 authors = ["Colin Woodbury <colin@fosskers.ca>"]
 edition = "2021"
 description = "Install and manage Arch Linux packages."
