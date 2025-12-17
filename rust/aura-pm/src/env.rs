@@ -19,6 +19,7 @@ use std::ops::Not;
 use std::path::Path;
 use std::path::PathBuf;
 use unic_langid::LanguageIdentifier;
+use which::which;
 
 const DEFAULT_EDITOR: &str = "vi";
 
@@ -145,12 +146,8 @@ impl Env {
     }
 
     /// The "sudo string" to be prefixed to certain shell calls.
-    pub(crate) fn sudo(&self) -> &'static str {
-        if self.general.doas {
-            "doas"
-        } else {
-            "sudo"
-        }
+    pub(crate) fn sudo(&self) -> &Path {
+        self.general.elevator.as_path()
     }
 
     /// Open a series of connections to ALPM handles. The quantity matches the
@@ -203,7 +200,7 @@ impl Env {
     /// Before continuing, confirm that the settled `Env` is valid to use.
     pub(crate) fn validate(&self) -> Result<(), Error> {
         if self.aur.hotedit {
-            which::which(&self.general.editor).map_err(|_| Error::MissingEditor)?;
+            which(&self.general.editor).map_err(|_| Error::MissingEditor)?;
         }
 
         Ok(())
@@ -227,6 +224,7 @@ struct RawGeneral {
     cpus: Option<u32>,
     editor: Option<String>,
     doas: Option<bool>,
+    elevator: Option<PathBuf>,
     language: Option<String>,
     noconfirm: Option<bool>,
 }
@@ -235,7 +233,7 @@ struct RawGeneral {
 pub(crate) struct General {
     pub(crate) cpus: u32,
     pub(crate) editor: String,
-    pub(crate) doas: bool,
+    pub(crate) elevator: PathBuf,
     pub(crate) language: LanguageIdentifier,
     /// Don't ask the user for confirmation.
     pub(crate) noconfirm: bool,
@@ -260,7 +258,7 @@ impl Default for General {
         Self {
             cpus: num_cpus::get() as u32,
             editor: editor(),
-            doas: false,
+            elevator: elevator(),
             language: aura_pm::ENGLISH,
             noconfirm: false,
         }
@@ -272,7 +270,11 @@ impl From<RawGeneral> for General {
         General {
             cpus: raw.cpus.unwrap_or_else(|| num_cpus::get() as u32),
             editor: raw.editor.unwrap_or_else(editor),
-            doas: raw.doas.unwrap_or(false),
+            elevator: if let Some(true) = raw.doas {
+                which("doas").unwrap_or(PathBuf::from("doas"))
+            } else {
+                raw.elevator.unwrap_or_else(elevator)
+            },
             // Precedence: We check config first for a language setting. If
             // nothing, we check the environment. If nothing, we fall back to
             // English. This can further be overridden by CLI flags.
@@ -289,6 +291,14 @@ impl From<RawGeneral> for General {
 /// The editor program to call in certain situations.
 fn editor() -> String {
     std::env::var("EDITOR").unwrap_or_else(|_| DEFAULT_EDITOR.to_string())
+}
+
+/// Privilege elevation program
+fn elevator() -> PathBuf {
+    which("sudo")
+        .or_else(|_| which("doas"))
+        .or_else(|_| which("run0"))
+        .unwrap_or(PathBuf::from("sudo"))
 }
 
 #[derive(Deserialize)]

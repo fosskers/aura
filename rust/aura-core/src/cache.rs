@@ -55,7 +55,7 @@ impl PkgPath {
 
     // TODO I'd like it if this could be avoided.
     /// Remove this via a shell call to `rm`.
-    pub fn sudo_remove(self, elevation: &str) -> Result<(), PathBuf> {
+    pub fn sudo_remove(self, elevation: &Path) -> Result<(), PathBuf> {
         match Command::new(elevation).arg("rm").arg(&self.path).status() {
             Ok(s) if s.success() => Ok(()),
             Ok(_) | Err(_) => Err(self.path),
@@ -63,7 +63,7 @@ impl PkgPath {
     }
 
     /// Delete this `PkgPath` and its `.sig` file, if there is one.
-    pub fn sudo_remove_with_sig(self, elevation: &str) -> Result<(), std::io::Error> {
+    pub fn sudo_remove_with_sig(self, elevation: &Path) -> Result<(), std::io::Error> {
         Command::new(elevation).arg("rm").arg(&self.path).status()?;
 
         let sig = self.sig_file();
