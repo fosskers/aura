@@ -171,11 +171,14 @@ fn build_one(
         .filter(|file| (file.contains("https://") || file.contains("http://")).not())
         .map(|s| s.as_str());
 
+    let changelog = info.changelog();
+
     let install_files = all_install_files(&clone);
 
     std::iter::once("PKGBUILD")
         .chain(install_files.iter().filter_map(|pb| pb.to_str()))
         .chain(to_copy)
+        .chain(changelog)
         .map(|file| {
             debug!("Copying {}", file);
             let path = Path::new(&file);
@@ -544,8 +547,7 @@ fn copy_to_cache(cache: &Path, tarballs: Vec<PkgPath>) -> Result<Vec<PkgPath>, E
                 .and_then(|file| {
                     let target = cache.join(file);
                     move_tarball(&path, &target).and_then(|_| {
-                        PkgPath::new(target.clone())
-                            .ok_or(Error::FilenameExtraction(target))
+                        PkgPath::new(target.clone()).ok_or(Error::FilenameExtraction(target))
                     })
                 })
         })
