@@ -171,6 +171,7 @@ fn build_one(
         .filter(|file| (file.contains("https://") || file.contains("http://")).not())
         .map(|s| s.as_str());
 
+    // Makepkg complains loudly if the CHANGELOG file is missing.
     let changelog = info.changelog();
 
     let install_files = all_install_files(&clone);
