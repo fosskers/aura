@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+#### Changed
+
+- Mandarin Chinese localisations now 100%.
+
 #### Fixed
 
 - CHANGELOG files are now copied to the build directory.
