@@ -171,6 +171,9 @@ fn build_one(
         .filter(|file| (file.contains("https://") || file.contains("http://")).not())
         .map(|s| s.as_str());
 
+    // Makepkg complains loudly if the CHANGELOG file is missing.
+    let changelog = info.changelog();
+
     let mut install_files = all_install_files(&clone);
     if let Some(ref install_file) = info.pkg.install {
         install_files.push(PathBuf::from(install_file))
@@ -179,6 +182,7 @@ fn build_one(
     std::iter::once("PKGBUILD")
         .chain(install_files.iter().filter_map(|pb| pb.to_str()))
         .chain(to_copy)
+        .chain(changelog)
         .map(|file| {
             debug!("Copying {}", file);
             let path = Path::new(&file);
@@ -279,10 +283,10 @@ fn build_one(
     Ok(Built { clone, tarballs })
 }
 
-/// The PKGBUILD author didn't specify any explicit in the `install` field, but
-/// there may be some "install files" lying around anyway. These have
-/// inconsistent naming schemes across packages, so we just grab anything that
-/// ends with `.install`.
+/// In the case where the PKGBUILD author didn't specify anything explicit in
+/// the `install` field, there may be some "install files" lying around anyway.
+/// These have inconsistent naming schemes across packages, so we just grab
+/// anything that ends with `.install`.
 fn all_install_files(clone: &Path) -> Vec<PathBuf> {
     clone
         .read_dir()
@@ -547,8 +551,7 @@ fn copy_to_cache(cache: &Path, tarballs: Vec<PkgPath>) -> Result<Vec<PkgPath>, E
                 .and_then(|file| {
                     let target = cache.join(file);
                     move_tarball(&path, &target).and_then(|_| {
-                        PkgPath::new(target.clone())
-                            .ok_or(Error::FilenameExtraction(target))
+                        PkgPath::new(target.clone()).ok_or(Error::FilenameExtraction(target))
                     })
                 })
         })

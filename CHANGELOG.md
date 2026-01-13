@@ -1,5 +1,11 @@
 # Aura Changelog
 
+## Unreleased
+
+#### Fixed
+
+- CHANGELOG files are now copied to the build directory.
+
 ## 4.1.0
 
 #### Added
