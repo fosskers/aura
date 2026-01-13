@@ -174,10 +174,7 @@ fn build_one(
     // Makepkg complains loudly if the CHANGELOG file is missing.
     let changelog = info.changelog();
 
-    let mut install_files = all_install_files(&clone);
-    if let Some(ref install_file) = info.pkg.install {
-        install_files.push(PathBuf::from(install_file))
-    }
+    let install_files = all_install_files(&info, &clone);
 
     std::iter::once("PKGBUILD")
         .chain(install_files.iter().filter_map(|pb| pb.to_str()))
@@ -283,11 +280,23 @@ fn build_one(
     Ok(Built { clone, tarballs })
 }
 
+/// All install scripts, whether explicitly specified by the PKGBUILD author or
+/// not.
+fn all_install_files(info: &Srcinfo, clone: &Path) -> Vec<PathBuf> {
+    let mut install_files = all_extra_install_files(&clone);
+
+    if let Some(install) = info.pkg.install.as_deref() {
+        install_files.push(PathBuf::from(install))
+    }
+
+    install_files
+}
+
 /// In the case where the PKGBUILD author didn't specify anything explicit in
 /// the `install` field, there may be some "install files" lying around anyway.
 /// These have inconsistent naming schemes across packages, so we just grab
 /// anything that ends with `.install`.
-fn all_install_files(clone: &Path) -> Vec<PathBuf> {
+fn all_extra_install_files(clone: &Path) -> Vec<PathBuf> {
     clone
         .read_dir()
         .map(|dir| {
