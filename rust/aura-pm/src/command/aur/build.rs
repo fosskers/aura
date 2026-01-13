@@ -283,7 +283,7 @@ fn build_one(
 /// All install scripts, whether explicitly specified by the PKGBUILD author or
 /// not.
 fn all_install_files(info: &Srcinfo, clone: &Path) -> Vec<PathBuf> {
-    let mut install_files = all_extra_install_files(&clone);
+    let mut install_files = all_extra_install_files(clone);
 
     if let Some(install) = info.pkg.install.as_deref() {
         install_files.push(PathBuf::from(install))
