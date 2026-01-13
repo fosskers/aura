@@ -1,5 +1,11 @@
 # aura-core
 
+## 0.8.7 (2026-01-14)
+
+#### Changed
+
+- Minor massaging of type signatures for flexibility.
+
 ## 0.8.4 (2025-12-16)
 
 #### Fixed
