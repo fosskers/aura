@@ -340,7 +340,6 @@ Aura has been translated by these generous people:
 |------------|-------------------------------------------------|
 | Arabic     | "Array in a Matrix"                             |
 | Bengali    | Saif Shahriar                                   |
-| Chinese    | Kai Zhang and Alex3236                          |
 | Croatian   | Denis Kasak and "stranac"                       |
 | Czech      | Daniel Rosel                                    |
 | Dutch      | Joris Blanken and Heimen Stoffels               |
@@ -353,6 +352,7 @@ Aura has been translated by these generous people:
 | Japanese   | Colin Woodbury and Onoue Takuro                 |
 | Korean     | "Nioden"                                        |
 | Latin      | "semilin"                                       |
+| Mandarin   | Kai Zhang, Alex3236, and Carlson24              |
 | Norwegian  | "chinatsun"                                     |
 | Polish     | Chris Warrick, Michał Kurek                     |
 | Portuguese | Henry Kupty, Thiago Perrotta, and Wagner Amaral |
