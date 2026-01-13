@@ -1600,9 +1600,9 @@ Below are the specifics of each field.
 @item editor
 @tab string
 @tab The editor opened with @code{--hotedit}
-@item doas
-@tab bool
-@tab Privilege escalation occurs via @code{doas}, not sudo
+@item elevator
+@tab string
+@tab A code to specify the human language of Aura's output messages
 @item language
 @tab string
 @tab A code to specify the human language of Aura's output messages

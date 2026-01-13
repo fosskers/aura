@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+#### Added
+
+- config: An `elevator` setting under `[general]` to manually set your privilege
+  elevation program (e.g. `sudo`). If not set, `aura` will attempt to find
+  `sudo`, `doas`, and `run0` in that order.
+
 #### Changed
 
 - Mandarin Chinese localisations now 100%.
@@ -10,6 +16,10 @@
 
 - CHANGELOG files are now copied to the build directory.
 - The `install=...` PKGBUILD field is respected.
+
+#### Deprecated
+
+- The `doas` config setting under `[general]`. Use `elevator` instead.
 
 ## 4.1.0
 

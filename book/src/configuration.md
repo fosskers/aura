@@ -19,7 +19,7 @@ Governed within the `[general]` section.
 |:------------|:-------|:----------------------------------------------------------------|
 | `cpus`      | int    | Affects parallelism in various algorithms.                      |
 | `editor`    | string | The editor opened with `--hotedit`, etc.                        |
-| `doas`      | bool   | Privilege escalation occurs via `doas`, not `sudo`.             |
+| `elevator`  | string | A sudo-like program to elevate privileges during installation.  |
 | `language`  | string | A code to specify the human language of Aura's output messages. |
 | `noconfirm` | bool   | Automatically accept all prompts.                               |
 
