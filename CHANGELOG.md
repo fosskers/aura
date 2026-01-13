@@ -1,6 +1,6 @@
 # Aura Changelog
 
-## Unreleased
+## 4.2.0 (2026-01-14)
 
 #### Added
 
@@ -21,7 +21,7 @@
 
 - The `doas` config setting under `[general]`. Use `elevator` instead.
 
-## 4.1.0
+## 4.1.0 (2025-12-16)
 
 #### Added
 
