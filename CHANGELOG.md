@@ -1,5 +1,16 @@
 # Aura Changelog
 
+## Unreleased
+
+#### Changed
+
+- Mandarin Chinese localisations now 100%.
+
+#### Fixed
+
+- CHANGELOG files are now copied to the build directory.
+- The `install=...` PKGBUILD field is respected.
+
 ## 4.1.0
 
 #### Added

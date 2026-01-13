@@ -171,11 +171,15 @@ fn build_one(
         .filter(|file| (file.contains("https://") || file.contains("http://")).not())
         .map(|s| s.as_str());
 
-    let install_files = all_install_files(&clone);
+    // Makepkg complains loudly if the CHANGELOG file is missing.
+    let changelog = info.changelog();
+
+    let install_files = all_install_files(&info, &clone);
 
     std::iter::once("PKGBUILD")
         .chain(install_files.iter().filter_map(|pb| pb.to_str()))
         .chain(to_copy)
+        .chain(changelog)
         .map(|file| {
             debug!("Copying {}", file);
             let path = Path::new(&file);
@@ -276,11 +280,23 @@ fn build_one(
     Ok(Built { clone, tarballs })
 }
 
-/// The PKGBUILD author didn't specify any explicit in the `install` field, but
-/// there may be some "install files" lying around anyway. These have
-/// inconsistent naming schemes across packages, so we just grab anything that
-/// ends with `.install`.
-fn all_install_files(clone: &Path) -> Vec<PathBuf> {
+/// All install scripts, whether explicitly specified by the PKGBUILD author or
+/// not.
+fn all_install_files(info: &Srcinfo, clone: &Path) -> Vec<PathBuf> {
+    let mut install_files = all_extra_install_files(&clone);
+
+    if let Some(install) = info.pkg.install.as_deref() {
+        install_files.push(PathBuf::from(install))
+    }
+
+    install_files
+}
+
+/// In the case where the PKGBUILD author didn't specify anything explicit in
+/// the `install` field, there may be some "install files" lying around anyway.
+/// These have inconsistent naming schemes across packages, so we just grab
+/// anything that ends with `.install`.
+fn all_extra_install_files(clone: &Path) -> Vec<PathBuf> {
     clone
         .read_dir()
         .map(|dir| {
@@ -544,8 +560,7 @@ fn copy_to_cache(cache: &Path, tarballs: Vec<PkgPath>) -> Result<Vec<PkgPath>, E
                 .and_then(|file| {
                     let target = cache.join(file);
                     move_tarball(&path, &target).and_then(|_| {
-                        PkgPath::new(target.clone())
-                            .ok_or(Error::FilenameExtraction(target))
+                        PkgPath::new(target.clone()).ok_or(Error::FilenameExtraction(target))
                     })
                 })
         })

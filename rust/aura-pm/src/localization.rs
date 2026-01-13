@@ -16,7 +16,6 @@ use unic_langid::LanguageIdentifier;
 pub(crate) const TRANSLATORS: &[(&str, &str)] = &[
     ("Arabic", "\"Array in a Matrix\""),
     ("Bengali", "Saif Shahriar"),
-    ("Chinese", "Kai Zhang / Alex3236"),
     ("Croatian", "Denis Kasak / \"stranac\""),
     ("Czech", "Daniel Rosel"),
     ("Dutch", "Joris Blanken / Heimen Stoffels"),
@@ -29,6 +28,7 @@ pub(crate) const TRANSLATORS: &[(&str, &str)] = &[
     ("Japanese", "Onoue Takuro / Colin Woodbury"),
     ("Korean", "\"Nioden\""),
     ("Latin", "\"semilin\""),
+    ("Mandarin", "Kai Zhang / Alex3236 / Carlson24"),
     ("Norwegian", "\"chinatsun\""),
     ("Polish", "Chris Warrick / Michał Kurek"),
     (
