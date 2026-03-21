@@ -622,6 +622,7 @@ pub(crate) fn upgrade<'a>(
         })
         .filter(|p| env.aur.ignores.contains(p.name.as_ref()).not())
         .collect();
+    let eligible_names: HashSet<_> = filtered.iter().map(|p| p.name.as_ref()).collect();
     debug!("After excluding ignores and debugs: {}", filtered.len());
 
     // --- Ensure they all have local clones --- //
@@ -675,6 +676,7 @@ pub(crate) fn upgrade<'a>(
     let db = alpm.alpm.localdb();
     let mut to_upgrade: Vec<(aura_core::Package<'_>, aura_core::Package<'_>)> = from_api
         .into_iter()
+        .filter(|new| eligible_names.contains(new.name.as_str()))
         .filter_map(|new| db.pkg(new.name.as_str()).ok().map(|old| (old, new)))
         .filter_map(
             |(old, new)| match (Package::from_alpm(old), Package::from_faur(new)) {
@@ -750,7 +752,8 @@ pub(crate) fn upgrade<'a>(
         let names = to_upgrade
             .iter()
             .map(|(old, _)| old.name.as_ref())
-            .chain(vcs.iter().map(|p| p.name.as_ref()));
+            .chain(vcs.iter().map(|p| p.name.as_ref()))
+            .filter(|name| eligible_names.contains(*name));
 
         install(fll, &env, Mode::Upgrade, names)?;
     }
