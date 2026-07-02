@@ -191,8 +191,10 @@ fn build_one(
         .ok()
         .map_err(Error::CopyBuildFiles)?;
 
-    if env.aur.diff {
+    if env.aur.diff == 1 {
         show_diffs(fll, env, &clone, base)?;
+    } else if env.aur.diff == 2 {
+        display_pkgbuild(fll, env, &build_dir, base)?;
     }
 
     if env.aur.hotedit {
@@ -308,6 +310,27 @@ fn all_extra_install_files(clone: &Path) -> Vec<PathBuf> {
                 .collect()
         })
         .unwrap_or_default()
+}
+
+fn display_pkgbuild(
+    fll: &FluentLanguageLoader,
+    env: &Env,
+    build_d: &Path,
+    pkgbase: &str,
+) -> Result<(), Error> {
+    let status = Command::new("cat")
+        .current_dir(build_d)
+        .arg("PKGBUILD")
+        .status();
+
+    match status {
+        Err(e) => warn!("Couldn't read the PKGBUILD of {}: {}", pkgbase, e),
+        Ok(_) => {
+            proceed!(fll, env, "proceed").ok_or(Error::Cancelled)?;
+        }
+    }
+
+    Ok(())
 }
 
 fn show_diffs(
