@@ -1272,8 +1272,8 @@ pub struct Aur {
     pub builduser: Option<String>,
 
     /// View diffs of PKGBUILDs and related build files before building.
-    #[clap(long, short = 'k', display_order = 3)]
-    pub diff: bool,
+    #[clap(long, short = 'k', action(ArgAction::Count), display_order = 3)]
+    pub diff: u8,
 
     /// View/edit PKGBUILDs and related build files before building.
     #[clap(long, display_order = 4)]

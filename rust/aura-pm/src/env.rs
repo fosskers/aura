@@ -319,7 +319,7 @@ struct RawAur {
     #[serde(default)]
     shellcheck: bool,
     #[serde(default)]
-    diff: bool,
+    diff: u8,
     #[serde(default)]
     delmakedeps: bool,
     #[serde(default)]
@@ -351,7 +351,7 @@ pub(crate) struct Aur {
     /// Run shellcheck over PKGBUILDs before building.
     pub(crate) shellcheck: bool,
     /// View diffs of PKGBUILDs (etc.) before building.
-    pub(crate) diff: bool,
+    pub(crate) diff: u8,
     /// Delete makedeps after building.
     pub(crate) delmakedeps: bool,
     /// Delete a package's build directory after the built tarball has been copied.
@@ -398,7 +398,7 @@ impl Aur {
             git: false,
             hotedit: false,
             shellcheck: false,
-            diff: false,
+            diff: 0,
             delmakedeps: false,
             clean: false,
             warn_unknowns: true,
@@ -441,8 +441,8 @@ impl Aur {
             self.shellcheck = true;
         }
 
-        if flags.diff {
-            self.diff = true;
+        if flags.diff > 0 {
+            self.diff = flags.diff;
         }
 
         if flags.delmakedeps {
