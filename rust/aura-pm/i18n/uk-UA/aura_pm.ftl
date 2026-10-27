@@ -1,248 +1,246 @@
-language-name = українська
+language-name = Українська
 
 # AUR Packages (-A)
 A-install-deps = Визначення залежностей...
 A-install-repo-pkgs = Залежності репозиторія:
 A-install-aur-pkgs = Пакунки AUR:
-# A-install-path-comp = Failed to extract final component of: { $path }
-# A-install-ignored = { $file } is marked "ignored". Install anyway?
+A-install-path-comp = Не вдалось витягнути останній компонент: { $path }
+A-install-ignored = { $file } позначено як "проігнорований". Всерівно встановити?
 
-# A-build-prep = Preparing build directories...
+A-build-prep = Підготовка тек для збірки
 A-build-pkg = Збираємо { $pkg }...
-# A-build-diff = Display diffs of build files?
-# A-build-hotedit-pkgbuild = Edit the PKGBUILD?
+A-build-diff = Показати різницю файлів збірки?
+A-build-hotedit-pkgbuild = Редагувати PKGBUILD?
 A-build-hotedit-install = Бажаєте відредагувати файл .install?
-A-build-fail = Збірка не вдалась.
-# A-build-fail = Package failed to build, citing:
-# A-build-e-pkgctl = Building within an isolated chroot failed.
+A-build-fail = Збірка пакету не вдалась:
+A-build-e-pkgctl = Збірка всередині ізольованогосередовища не вдалась.
 A-build-e-makepkg = Сталась помилка makepkg.
-# A-build-e-edit = Failed to edit: { $file }
-# A-build-e-tarball = Failed to move: { $file }
-# A-build-e-filename = Failed to extract filename from: { $file }
-# A-build-e-copies = Failed to copy build files.
-# A-build-e-perm = Failed to set file permissions for: { $dir }
-# A-build-pkglist = Failed to determine makepkg output paths from: { $dir }
+A-build-e-edit = Не вдалось редагувати: { $file }
+A-build-e-tarball = Не вдалось перемістити: { $file }
+A-build-e-filename = Не вдалось витягти назву файлу з: { $file }
+A-build-e-copies = Не вдалось скопіювати файли збірки.
+A-build-e-perm = Не вдалось вказати дозволи для { $dir }
+A-build-pkglist = Не вдалося визначити шляхи виводу makepkg з: { $dir }
 A-build-pull = Не вдалося використати 'git pull' для отримання останніх оновлень.
 A-build-continue = Ви все одно бажаєте продовжити?
 
-# A-i-repo = Repository
-# A-i-version = Version
-# A-i-status = AUR Status
-# A-i-maintainer = Maintainer
-# A-i-proj-url = Project URL
-# A-i-aur-url = AUR URL
-# A-i-license = License
-# A-i-group = Groups
-# A-i-provides = Provides
-# A-i-depends = Depends On
-# A-i-make = Make Deps
-# A-i-opt = Optional Deps
-# A-i-check = Check Deps
-# A-i-votes = Votes
-# A-i-pop = Popularity
-# A-i-desc = Description
-# A-i-keywords = Keywords
-# A-i-submitted = Submitted
-# A-i-updated = Updated
+A-i-repo = Репозиторій
+A-i-version = Версія
+A-i-status = Статус AUR
+A-i-maintainer = Супроводжувач
+A-i-proj-url = Адреса проекту
+A-i-aur-url = Адреса AUR
+A-i-license = Ліцензія
+A-i-group = Групи
+# A-i-provides = Надає
+A-i-depends = Залежить від
+A-i-make = Зібрати залежності
+A-i-opt = Необов'язкові
+A-i-check = Перевірити залежності
+A-i-votes = Голоси
+A-i-pop = Популярність
+A-i-desc = Опис
+A-i-keywords = Ключові слова
+A-i-submitted = Затверджено
+A-i-updated = Оновлено
 
 A-u-fetch-info = Збираємо інформацію про пакунок...
 A-u-comparing = Порівнюємо версії пакунків...
 A-u-no-upgrades = Пакунки AUR не потребують оновлення.
 A-u-to-upgrade = Пакунки AUR, готові для оновлення:
-# A-u-git = VCS packages to rebuild:
+A-u-git = Пакети VCS які будуть перебудовані:
 
-# A-w = Cloning { $package }...
+A-w = Клонування { $package }...
 
-# A-y-refreshing = Refreshing local clones of known AUR packages...
-# A-y-pulling = Pulling latest commits
+# A-y-refreshing = Оновлення локальних клонів відомих пакетів AUR...
+A-y-pulling = Завантаження останніх змін
 
 # Snapshots (-B)
 B-saved = Стан пакунків збережено.
-# B-clean = Remove stale snapshots?
-# B-none = No usable snapshots found.
-# B-select = Select a snapshot to restore:
+B-clean = Видалити застарілі знімки?
+B-none = Знімків не знайдено.
+B-select = Виберіть знімок для відновлення:
 
 # Cache (-C)
-# C-size = Current cache size: { $size }
-
-# C-b-file = { $target } already exists and is not a directory.
-# C-b-nonempty = Target { $target } exists but is not empty!
+C-size = Поточний розмір кешу: { $size }
+C-b-file = { $target } вже існує і не є каталогом.
+C-b-nonempty = Ціль { $target } існує але вона не пуста!
 C-b-target = Зберігаємо резервну копію до { $target }
-# C-b-curr = Failed to read current directory.
+C-b-curr = Не вдалось прочитати поточну теку.
 
-# C-i-latest = Latest
-# C-i-created = Created
-# C-i-installed = installed
-# C-i-sig = Signature
-# C-i-size = Tarball Size
-# C-i-avail = Available Versions
+C-i-latest = Останній
+C-i-created = Створено
+C-i-installed = Встановлено
+C-i-sig = Підпис
+C-i-size = Розмір архіву
+C-i-avail = Доступні версії
 
 C-c-keep = { $pkgs } версія кожного пакунку залишиться недоторканою. Все інше буде видалено.
 C-c-freed = { $bytes } звільнилось.
 
 C-downgrade-which = Яку версію пакунку { $pkg } ви бажаєте?
 
-# C-y-no-work = Package cache already synchronized.
-# C-t-invalids = Removing invalid package tarballs.
+C-y-no-work = Кеш пакетів синхронізовано.
+C-t-invalids = Видалення недійсних архівів пакетів.
 
 # Logs (-L)
-# L-first = First Install
-# L-upgrades = Upgrades
-# L-recent = Recent Actions
-# L-search-err = Searching your logs via { $cmd } failed.
-# L-view-err = Failed to open your ALPM log.
+L-first = Перше встановлення
+L-upgrades = Оновлення
+L-recent = Останні дії
+L-search-err = Пошук у ваших журналах за допомогою { $cmd } не вдався.
+L-view-err = Не вдалось відкрити ваш лог ALPM.
 
 # Opening Pages (open)
-# open-err = Failed to open { $url }.
+open-err = Не вдалось відкрити { $url }.
 
 # System Statistics (stats)
-# stats-local = Failed to load language data.
-# stats-host = Host
-# stats-user = User
-# stats-distro = Distribution
-# stats-editor = Editor
-# stats-pkgs = Installed packages
-# stats-aura-cache = Aura Package Cache
-# stats-pacman-cache = Pacman Package Cache
-# stats-aura-build = Aura Build Cache
-# stats-tmp = /tmp Directory
+stats-local = Не вдалося завантажити мовні дані.
+stats-host = Хост
+stats-user = Користувач
+stats-distro = Розповсюдження
+stats-editor = Редактор
+stats-pkgs = Встановлені пакети
+stats-aura-cache = Кеш пакетів Aura
+stats-pacman-cache = Кеш пакетів Pacman
+stats-aura-build = Кеш збірки Aura
+stats-tmp = Тека /tmp
 
 # System Validation (check)
-# check-start = Validating your system.
-# check-missing-exec = Fix: Please install { $exec } and/or ensure it's on your PATH.
-# check-env = Environment
-# check-env-editor = EDITOR variable set?
-# check-env-editor-exec = EDITOR value ({ $exec }) is executable?
-# check-env-editor-vi = Backup editor vi is executable?
-# check-env-exec = { $exec } installed and executable?
-# check-env-lang = { $cmd } contains LANG value? ({ $lang })
-# check-env-lang-fix = Update your { $file } to include { $lang }.
-# check-env-lang-fix2 = Set your LANG variable!
-# check-env-lang-known = Aura is localised to your LANG?
-# check-env-java-bin = Java tooling installed?
-# check-env-java-bin-fix = Considering installing { $pkg }.
-# check-env-java-set = Java environment set?
-# check-env-java-set-fix = See { $cmd }.
-# check-pconf = Pacman Configuration (/etc/pacman.conf)
-# check-pconf-par = Parallel downloads activated?
-# check-pconf-par-fix = { $setting } is off, or set to 1. Set { $set } for faster tarball fetching.
-# check-pconf-ignores = No overlapping ignored packages?
-# check-pconf-ignores-fix = The following packages are ignored in both pacman.conf and aura.toml: { $pkgs }
-# check-pconf-pacnew = All .pacnew files accounted for?
-# check-pconf-pacnew-broken = Error: Call to { $fd } utterly failed.
+check-start = Перевірка вашої системи.
+check-missing-exec = Виправлення: Будьласка встановіть { $exec } та переконайтесь що він у вашій PATH.
+check-env = Середовище
+check-env-editor = Змінна EDITOR встановлена?
+check-env-editor-exec = Значення EDITOR ({ $exec }) може виконуватись?
+check-env-editor-vi = Запасний редактор vi може виконуватись?
+check-env-exec = { $exec } встановлено та може виконуватись?
+check-env-lang = { $cmd } містить значення LANG? ({ $lang })
+check-env-lang-fix = Оновіть ваш { $file } що б включити { $lang }.
+check-env-lang-fix2 = Визначте змінну LANG!
+check-env-lang-known = Aura перекладено на вашу мову?
+check-env-java-bin = Інструментарій Java встановлено?
+check-env-java-bin-fix = Запропоновано встановити { $pkg }.
+check-env-java-set = Середовище Java встановлено?
+check-env-java-set-fix = Перегляньте { $cmd }.
+check-pconf = Конфігурація Pacman (/etc/pacman.conf)
+check-pconf-par = Паралельне завантаження увімкнено?
+check-pconf-par-fix = { $setting } вимкнено, або встановлено на 1. Встановіть { $set } для швидшого завантаження пакетів.
+check-pconf-ignores = Немає пакетів, що перекриваються та ігноруються?
+check-pconf-ignores-fix = Ці пакети ігноруються в pacman.conf та aura.toml: { $pkgs }
+check-pconf-pacnew = Всі файли .pacnew враховано?
+check-pconf-pacnew-broken = Помилка: Виклик { $fd } завершився повним провалом.
 
-# check-pconf-pacnew-old = { $path } is older than its .pacnew by { $days ->
-#    [one] 1 day.
-#   *[many] {$days} days.
-# }
+check-pconf-pacnew-old = { $path } є старшим за його .pacnew на { $days ->
+    [один] 1 день.
+   *[багато] {$days} днів.
+ }
 
-# check-aconf = Aura Configuration
-# check-aconf-aura-exists = Aura config file exists?
-# check-aconf-aura-exists-fix = Fix: Consider { $cmd }
-# check-aconf-aura-parse = Aura config file can be parsed?
-# check-aconf-old-dirs = No old Aura directories exist?
-# check-aconf-old-conf = No old Aura config files exist?
-# check-mconf = Makepkg Configuration ({ $path })
-# check-mconf-packager = PACKAGER set?
-# check-mconf-packager-fix = Fix: Set { $cmd } within { $path }
-# check-snapshots = Package Snapshots
-# check-snapshot-usable = All snapshots have corresponding tarballs?
-# check-snapshot-usable-fix = Fix: You can remove old/unusable snapshots with { $command }
-# check-cache = Package Tarball Caches
-# check-cache-exists = All specified caches exist?
-# check-cache-tarballs = All tarballs valid?
-# check-cache-tarballs-fix = Fix: You can remove invalid tarballs with { $command }
-# check-cache-missing = Every installed official package has a tarball?
-# check-cache-missing-fix = Fix: You can download missing official tarballs with { $command }
-# check-cache-missing-for = Every installed AUR package has a tarball?
-# check-cache-missing-for-fix = Fix: View the missing packages with { $cmd } and reinstall them manually.
-# check-pkgs = Package Status
-# check-pkgs-old = All explicitly installed, non-dep packages are up to date?
-# check-pkgs-old-warn = { $pkg } was last updated { $days } ago.
-# check-pkgs-empty = All package clones are populated?
-# check-pkgs-empty-fix = Fix: Delete the following directories.
+check-aconf = Конфігурація Aura
+check-aconf-aura-exists = Файл конфігурації Aura існує?
+check-aconf-aura-exists-fix = Виправлення: перевірте { $cmd }
+check-aconf-aura-parse = Файл налаштувань Aura можливо зчитати?
+check-aconf-old-dirs = Старих тек Aura немає?
+check-aconf-old-conf = Старих файлів конфігурації Aura немає?
+check-mconf = Налаштування Makepkg ({ $path })
+check-mconf-packager = Змінну PACKAGER встановлено?
+check-mconf-packager-fix = Виправлення: Встановити { $cmd } у { $path }
+check-snapshots = Знімки пакетів
+check-snapshot-usable = Всі знімки мають відповідні архіви?
+check-snapshot-usable-fix = Виправлення: Ви можете видалити застарілі абонеробочі знімки за допомогою { $command }
+check-cache = Кеш архівів пакетів
+check-cache-exists = Всі зазначені кеші існують?
+check-cache-tarballs = Всі архіви дійсні?
+check-cache-tarballs-fix = Fix: Ви можете видалити недійсні архіви за допомогою { $command }
+check-cache-missing = Кожен встановлений офіційний пакет має архів?
+check-cache-missing-fix = Fix: Ви можете завантажити відсутні офіційні архіви за допомогою { $command }
+check-cache-missing-for = Кожен встановлений пакет AUR має архів?
+check-cache-missing-for-fix = Виправлення: Перегляньте відсутні пакети за допомогою { $cmd } та перевстановити їх вручну.
+check-pkgs = Стан пакету
+check-pkgs-old = Усі явно встановлені пакети, що не входять до складу залежностей, оновлені?
+check-pkgs-old-warn = { $pkg } востаннє оновлено { $days } тому.
+check-pkgs-empty = All package clones are populated?
+check-pkgs-empty-fix = Виправлення: Видаліть наступні каталоги.
 
 # Thanks
-# thanks-you = Thank you for using Aura.
-# thanks-colin = Aura by Colin Woodbury, 2012 - 2024
-# thanks-pacman = Thank you to the Pacman and Arch Linux teams for providing a solid foundation.
-# thanks-everyone = Thank you to Aura's contributors, donators, and users.
-# thanks-logo = Aura's logo by Cristiano Vitorino.
-# thanks-translators = Aura is localised by:
+thanks-you = Дякую вам за використання Aura.
+thanks-colin = Aura від Colin Woodbury, 2012 - 2024
+thanks-pacman = Подяка командам Pacman та Arch Linux за створення міцної основи.
+thanks-everyone = Подяка вкладникам, жертводавцям та Користувачам Aura.
+thanks-logo = Логотип Aura від Cristiano Vitorino.
+thanks-translators = Aura переклали:
 
 # Configuration (conf)
-# conf-toml-err = Failed to serialize current config.
+conf-toml-err = Не вдалося серіалізувати поточну конфігурацію.
 
 # Dependencies (deps)
-# deps-io = Failed to generate the dependency image.
+deps-io = Не вдалося створити образ залежностей.
 
 # Runtime Environment
-# env-missing-editor = Provided EDITOR is not on the PATH.
+env-missing-editor = Наданий EDITOR не знаходиться в PATH.
 env-pconf = Не вдалось зрозуміти вміст файлу pacman.conf.
 
 # Pacman Calls
-# pacman-external = A call to pacman utterly failed.
-# pacman-u = A call to pacman -U failed.
-# pacman-s = A call to pacman -S failed.
-# pacman-misc = A call to pacman gave a non-zero exit code.
+pacman-external = Виклик функції pacman не вдався.
+pacman-u = Не вдалось викликати pacman -U.
+pacman-s = Не вдалось викликати pacman -S.
+pacman-misc = Виклик pacman повернув ненульове значення.
 
 # Aura-specific Directories
-# dir-mkdir = Failed to create the directory: { $dir }.
-# dir-home = Unable to determine Aura's config directory.
-# dir-cache = Unable to determine Aura's cache directory.
+dir-mkdir = Не вдалось створити теку: { $dir }.
+dir-home = Неможливо визначити теку конфігурації Aura.
+dir-cache = Неможливо визначити теку кешу Aura.
 
 # Dependency Resolution
-# dep-exist = The package { $pkg } does not exist.
-# dep-exist-par = The dependency { $pkg } of { $par } does not exist.
-# dep-graph = The dependency graph was somehow malformed.
-# dep-cycle = Dependency cycle detected: { $cycle }
-# dep-multi = There were multiple errors during dependency resolution.
+dep-exist = Пакет { $pkg } не існує.
+dep-exist-par = Залежнісь { $pkg } від { $par } не існує.
+dep-graph = Графік залежностей мав певні порушення у структурі.
+dep-cycle = Виявлено цикл залежностей: { $cycle }
+dep-multi = Під час визначення залежностей сталося кілька помилок.
 
 # Git Operations
-# git-diff = A git diff failed for: { $file }
-# git-hash = Reading a git hash into Rust failed.
-# git-pull = A git pull failed: { $dir }
-# git-clone = A git clone failed: { $dir }
-# git-io = Calling git somehow failed.
+git-diff = Помилка під час виконання команди git diff для: { $file }
+git-hash = Не вдалося зчитати хеш Git у Rust.
+git-pull = Виклик git pull не вдався: { $dir }
+git-clone = Виклик git clone не вдався: { $dir }
+git-io = Виклик git провалився.
 
 # Faur Calls
-# faur-fetch = Calling the metadata server utterly failed: { $pkg }
-# faur-unknown = Unknown package: { $pkg }
-# faur-too-many = More results returned from Faur than expected: { $pkg }
+faur-fetch = Звернення до сервера метаданих провалилось: { $pkg }
+faur-unknown = Невідомий пакет: { $pkg }
+faur-too-many = Faur надав більше результатів, ніж очікувалося: { $pkg }
 
 # Common Errors
-# err-alpm = Failed to open ALPM handle.
-# err-config-path = Failed to determine the path to Aura's config file.
-# err-curl = A CURL transation failed: { $err }
-# err-file-del = Failed to delete: { $file }
-# err-file-open = Failed to open file handle to: { $file }
-# err-file-write = Failed to write file: { $file }
-# err-json-decode = Failed to decode JSON from: { $url }
-# err-json-write = Failed to write JSON to: { $file }
-# err-mutex = A mutex was poisoned.
-# err-pool-create = Failed to create an ALPM connection pool.
-# err-pool-get = Failed to get an ALPM handle from the connection pool.
-# err-read-dir = Failed to read directory: { $dir }
-# err-srcinfo = Failed to parse .SRCINFO: { $file }
-# err-sudo = Running Aura with sudo is not necessary.
-# err-time-conv = Failed to convert a timestamp.
-# err-time-format = Failed to format a time string.
-# err-user-input = Failed to get user input.
-# err-utf8 = A UTF-8 conversion failed.
-# err-write = Somehow failed to write to stdout.
+err-alpm = Не вдалося відкрити дескриптор ALPM.
+err-config-path = Не вдалося визначити шлях до файлу конфігурації Aura.
+err-curl = Транзакція CURL завершилася невдало: { $err }
+err-file-del = Не вдалось видалити: { $file }
+err-file-open = Не вдалося відкрити дескриптор файлу для: { $file }
+err-file-write = Не вдалось записати файл: { $file }
+err-json-decode = Не вдалося розшифрувати JSON із: { $url }
+err-json-write = Не вдалося записати JSON у: { $file }
+err-mutex = Мутекс був «отруєний».
+err-pool-create = Не вдалося створити пул з'єднань ALPM.
+err-pool-get = Не вдалося отримати дескриптор ALPM із пулу з'єднань.
+err-read-dir = Не вдалось прочитати теку: { $dir }
+err-srcinfo = Не вдалося проаналізувати файл .SRCINFO: { $file }
+err-sudo = Запускати Aura з sudo не необов'язково.
+err-time-conv = Не вдалося перетворити часовий штамп.
+err-time-format = Не вдалося відформатувати рядок часу.
+err-user-input = Не вдалося отримати введені користувачем дані.
+err-utf8 = Помилка під час перетворення в формат UTF-8.
+err-write = Не вдалося записати дані у stdout.
 
 # Common Fields
-common-yes = так
-# common-no = No
-# common-name = Name
-# common-done = Done.
-# common-no-packages = No packages specified.
-# common-no-work = Nothing to do.
-# common-cancelled = Action cancelled.
-# common-replace = You can delete { $old } in favour of { $new }.
+common-yes = Так
+common-no = Ні
+common-name = Ім'я
+common-done = Готово.
+common-no-packages = Пакет не вказано.
+common-no-work = Нічого робити.
+common-cancelled = Дія скасована.
+common-replace = Ви можете видалити { $old } на користь { $new }.
 
 # Misc.
-# proceed = Proceed?
-# proceed-affirmative = y
-proceed-affirmative-alt = Т
-proceed-negative = н
+proceed = Продовжити?
+proceed-affirmative = y
+proceed-affirmative-alt = Y
+proceed-negative = n
